@@ -1,9 +1,7 @@
 from kivymd.app import MDApp
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
+from kivy.lang import Builder
+from kivy_lang.kivy_lang import KV
 import pyrebase
-import requests
-import json
 
 firebase_config = {
     'apiKey': "AIzaSyDCCgo6Iq_Xzrfh1tUJhRh8QTw8T1uhtSo",
@@ -21,30 +19,39 @@ db = firebase.database()
 
 
 class EasyShopping(MDApp):
-    firebase_url = "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app/.json"
+    # firebase_url = "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app/.json"
     currently_logged_in_token = None
 
     def build(self):
-        box_layout = BoxLayout()
-        button = Button(text="Create")
-        box_layout.add_widget(button)
-        return box_layout
+        self.theme_cls.theme_style = "Light"
+        self.theme_cls.primary_palette = "Green"
+        return Builder.load_string(KV)
 
-    def sign_up(self, user_email, user_password):
+    def sign_up(self):
         try:
-            auth.create_user_with_email_and_password(user_email, user_password)
+            auth.create_user_with_email_and_password(self.root.ids.user_email.text, self.root.ids.user_password.text)
         except Exception:
             print("E-Mail already used!")
             # TODO
 
-    def login(self, user_email, user_password):
+    def login(self):
         try:
-            login = auth.sign_in_with_email_and_password(user_email, user_password)
+            login = auth.sign_in_with_email_and_password(self.root.ids.user_email.text,
+                                                         self.root.ids.user_password.text)
             self.currently_logged_in_token = login["idToken"]
             self.currently_logged_in_token = auth.refresh(login["refreshToken"])
         except Exception:
             print("Invalid E-Mail or Password")
             # TODO
+
+    def forgotten_password(self):
+        pass
+        # TODO
+
+    def join_as_guest(self):
+        login = auth.sign_in_anonymous()
+        self.currently_logged_in_token = login["idToken"]
+        self.currently_logged_in_token = auth.refresh(login["refreshToken"])
 
 
 if __name__ == '__main__':
