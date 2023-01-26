@@ -1,12 +1,58 @@
 KV = """
+
 WindowManager:
     LoginScreen:
     RegisterScreen:
-    HomeScreen:
+    NavigationScreen:
 
-<HomeScreen>:
-    name: "home"
-
+<NavigationScreen>:
+    name: "nav"
+    
+    MDBottomNavigation:
+        id: bottom_nav
+        selected_color_background: "red"
+        use_text: False
+            
+        MDBottomNavigationItem:
+            name: "home"
+            icon: "home"
+            
+            MDBoxLayout:
+                adaptive_size: True
+                pos_hint: {"center_x": .5, "center_y": .5}
+                
+                MDTextField:
+                    size_hint_x: None
+                    width: "300dp"
+                    pos_hint: {"center_x": .5, "center_y": .5}
+            
+        MDBottomNavigationItem:
+            name: "shops"
+            icon: "shopping"
+            
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "blue"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                
+                MDFlatButton:
+                    text: "helloszevasz"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            
+        MDBottomNavigationItem:
+            name: "profile"
+            icon: "account"
+            on_tab_press: app.check_if_registered()
+            
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "green"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                
+                MDFlatButton:
+                    text: "helloszia"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}   
+                
 <ClickableTextFieldRound>
     size_hint_y: None
     height: user_password.height

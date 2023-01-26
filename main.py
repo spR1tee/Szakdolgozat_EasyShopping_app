@@ -6,6 +6,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFillRoundFlatButton
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivy_lang.kivy_lang import KV
+import screens
 import pyrebase
 import datetime
 
@@ -40,18 +41,6 @@ class ClickableTextFieldRoundPasswordAgain(MDRelativeLayout):
     pass
 
 
-class LoginScreen(Screen):
-    pass
-
-
-class RegisterScreen(Screen):
-    pass
-
-
-class HomeScreen(Screen):
-    pass
-
-
 class EasyShopping(MDApp):
     # firebase_url = "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app/.json"
     dialog = None
@@ -63,10 +52,16 @@ class EasyShopping(MDApp):
         self.theme_cls.primary_palette = "Green"
         return Builder.load_string(KV)
 
+    def on_start(self):
+        if auth.current_user is None:
+            self.go_to_login_screen()
+        else:
+            self.go_to_home_screen()
+
     def sign_up(self):
         if self.root.get_screen("register").ids.user_email.text is "" or self.root.get_screen(
                 "register").ids.register_pw.text is "" or self.root.get_screen(
-                "register").ids.register_pw_again.text is "":
+            "register").ids.register_pw_again.text is "":
             self.open_error_dialog("Az összes mezőt kötelező kitölteni!")
             return
 
@@ -89,10 +84,16 @@ class EasyShopping(MDApp):
                                                          self.root.get_screen("login").ids.login_pw.text)
             self.currently_logged_in_token = login["idToken"]
             self.currently_logged_in_token = auth.refresh(login["refreshToken"])
-            self.go_to_home_screen()
-            print("nice")
+            self.go_to_nav_screen()
+            print(self.currently_logged_in_token)
+            print(auth.current_user)
         except Exception:
             self.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
+
+    def log_out(self):
+        if auth.current_user is not None:
+            auth.current_user = None
+        self.go_to_login_screen()
 
     def forgotten_password(self):
         pass
@@ -102,6 +103,8 @@ class EasyShopping(MDApp):
         login = auth.sign_in_anonymous()
         self.currently_logged_in_token = login["idToken"]
         self.currently_logged_in_token = auth.refresh(login["refreshToken"])
+        self.root.current = "nav"
+        print(auth.current_user)
 
     def open_error_dialog(self, error_text):
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
@@ -111,6 +114,15 @@ class EasyShopping(MDApp):
 
     def close_dialog(self, obj):
         self.dialog.dismiss()
+
+    def close_dialog_go_to_home(self, obj):
+        self.dialog.dismiss()
+        self.go_to_home_screen()
+
+    def close_dialog_go_to_register(self, obj):
+        self.dialog.dismiss()
+        self.go_to_home_screen()
+        self.go_to_register_screen()
 
     def store_user_data(self):
         self.data = {"email": self.root.get_screen("register").ids.user_email.text,
@@ -126,8 +138,29 @@ class EasyShopping(MDApp):
     def go_to_register_screen(self):
         self.root.current = "register"
 
+    def go_to_nav_screen(self):
+        self.root.current = "nav"
+
     def go_to_home_screen(self):
-        self.root.current = "home"
+        self.root.get_screen("nav").ids.bottom_nav.switch_tab("home")
+
+    def go_to_shops_screen(self):
+        self.root.get_screen("nav").ids.bottom_nav.switch_tab("shops")
+
+    def go_to_profile_screen(self):
+        self.root.get_screen("nav").ids.bottom_nav.switch_tab("profile")
+
+    def check_if_registered(self):
+        if "registered" in auth.current_user.keys():
+            if auth.current_user["registered"] is True:
+                return
+
+        close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog_go_to_home)
+        register_button = MDFillRoundFlatButton(text="Regisztrálok", on_release=self.close_dialog_go_to_register)
+        self.dialog = MDDialog(title="Hiba",
+                               text="Sajnáljuk, de ez az oldal csak regisztrált felhasználók számára érhető el.",
+                               size_hint=(0.7, 1), buttons=[close_button, register_button])
+        self.dialog.open()
 
 
 if __name__ == '__main__':
