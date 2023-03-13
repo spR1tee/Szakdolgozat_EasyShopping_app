@@ -2,9 +2,14 @@ from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFillRoundFlatButton
+from kivymd.uix.label import MDLabel
 from kivymd.uix.relativelayout import MDRelativeLayout
+from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.textfield import MDTextField
+
 from kivy_lang.kivy_lang import KV
 import screens
 import pyrebase
@@ -41,11 +46,16 @@ class ClickableTextFieldRoundPasswordAgain(MDRelativeLayout):
     pass
 
 
+class ForgottenPwContent(MDBoxLayout):
+    pass
+
+
 class EasyShopping(MDApp):
     # firebase_url = "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app/.json"
     dialog = None
     currently_logged_in_token = None
     data = None
+    dob = None
 
     def build(self):
         self.theme_cls.theme_style = "Light"
@@ -96,8 +106,25 @@ class EasyShopping(MDApp):
         self.go_to_login_screen()
 
     def forgotten_password(self):
-        pass
-        # TODO
+        content_cls = ForgottenPwContent()
+        close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
+        send_button = MDFillRoundFlatButton(text="E-mail küldése", on_release=lambda x: self.get_data(x, content_cls))
+        self.dialog = MDDialog(title="Elfelejtett jelszó", size_hint=(1, 1),
+                               type="custom", buttons=[close_button, send_button],
+                               content_cls=content_cls)
+        self.dialog.open()
+
+    def get_data(self, x, content_cls):
+        textfield = content_cls.ids.forgotten_pw_email
+        value = textfield._get_text()
+        if value is not "":
+            self.dialog.dismiss()
+            auth.send_password_reset_email(value)
+            print("success")
+        else:
+            self.open_error_dialog("Add meg az e-mail címed!")
+
+        # hibakezelés TODO
 
     def join_as_guest(self):
         login = auth.sign_in_anonymous()
@@ -126,7 +153,7 @@ class EasyShopping(MDApp):
 
     def store_user_data(self):
         self.data = {"email": self.root.get_screen("register").ids.user_email.text,
-                     "date_of_birth": self.root.get_screen("register").ids.date_of_birth.text,
+                     "date_of_birth": self.dob,
                      "username": self.root.get_screen("register").ids.username.text,
                      "timestamp": str(datetime.datetime.now())
                      }
@@ -161,6 +188,19 @@ class EasyShopping(MDApp):
                                text="Sajnáljuk, de ez az oldal csak regisztrált felhasználók számára érhető el.",
                                size_hint=(0.7, 1), buttons=[close_button, register_button])
         self.dialog.open()
+
+    def on_save_date_picker(self, instance, value, date_range):
+        label = MDLabel(text=str(value), halign="center", adaptive_height=True, font_name="fonts/Comfortaa-Regular.ttf")
+        if self.dob is not None:
+            self.root.get_screen("register").ids.dob_box.clear_widgets()
+        self.dob = str(value)
+        self.root.get_screen("register").ids.dob_box.add_widget(label)
+        print(self.dob)
+
+    def show_date_picker(self):
+        date_dialog = MDDatePicker(title="VÁLASSZ DÁTUMOT", min_year=1910, max_year=2011, year=2000, month=1, day=1)
+        date_dialog.bind(on_save=self.on_save_date_picker)
+        date_dialog.open()
 
 
 if __name__ == '__main__':

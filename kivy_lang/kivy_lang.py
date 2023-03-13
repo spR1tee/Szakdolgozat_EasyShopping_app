@@ -51,7 +51,51 @@ WindowManager:
                 
                 MDFlatButton:
                     text: "helloszia"
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}   
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    
+        MDBottomNavigationItem:
+            name: "cards"
+            icon: "credit-card"
+            # on_tab_press: app.check_if_registered()
+            
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "green"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                
+                MDFlatButton:
+                    text: "hellocsá"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        
+        MDBottomNavigationItem:
+            name: "favorites"
+            icon: "heart"
+            # on_tab_press: app.check_if_registered()
+            
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "green"
+                pos_hint: {"center_x": .5, "center_y": .5}
+                
+                MDFlatButton:
+                    text: "hellocsákedvencek"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    
+<ForgottenPwContent>
+    spacing: "20dp"
+    text: forgotten_pw_email.text
+    height: "120dp"
+    
+    MDTextField:
+        id: forgotten_pw_email
+        pos_hint: {'center_x': 0.5}
+        pos_hint: {'center_y': 0.5}
+        size_hint: None, None
+        width: "300dp"
+        hint_text: "Add meg az e-mail címed"
+        helper_text: "Erre az e-mail címre fogunk küldeni egy e-mailt"
+        helper_text_mode: "on_focus"
+              
                 
 <ClickableTextFieldRound>
     size_hint_y: None
@@ -155,7 +199,7 @@ WindowManager:
                     font_name: "fonts/Comfortaa-Regular.ttf"
                     size_hint: None, None
                     width: "300dp"
-                    on_press: app.login()
+                    on_release: app.login()
                 
                 MDTextButton:
                     text: "Elfelejtett jelszó"
@@ -163,6 +207,7 @@ WindowManager:
                     font_name: "fonts/Comfortaa-Regular.ttf"
                     font_size: 12
                     size_hint: None, None
+                    on_release: app.forgotten_password()
                 
             MDLabel:
                 text: "Ha még nincs fiókod, itt regisztrálhatsz egyet:"
@@ -181,7 +226,7 @@ WindowManager:
                 pos_hint: {'center_x': 0.5}
                 size_hint: None, None
                 width: "300dp"
-                on_press:
+                on_release:
                     app.root.current = "register"
                     root.manager.transition.direction = "right"
             
@@ -201,51 +246,48 @@ WindowManager:
                 pos_hint: {'center_x': 0.5}
                 size_hint: None, None
                 width: "300dp"
-                on_press: app.join_as_guest()
+                on_release: app.join_as_guest()
     
 <RegisterScreen>:
     name: "register"
     
-    MDCard:
-        orientation: "vertical"
-        size: root.width, root.height
-        spacing: 10
-        padding: 15
-        elevation: 10
-        md_bg_color: "white"
-    
+    ScrollView:
+        do_scroll_x: False
+        do_scroll_y: True
+        
         MDBoxLayout:
             orientation: "vertical"
+            size: root.width, root.height
             spacing: 10
-            size_hint: None, None
-            pos_hint: {'center_x': 0.5}
-            adaptive_height: True
-            adaptive_width: True
+            padding: 15
+            elevation: 10
             md_bg_color: "white"
-            
+                
             MDBoxLayout:
                 orientation: "horizontal"
+                size_hint: None, None
+                pos_hint: {'center_x': 0.4}
                 spacing: 15
                 adaptive_height: True
                 adaptive_width: True
-            
+                
                 MDIconButton:
                     icon: "arrow-left"
                     size_hint: None, None
                     pos_hint: {'center_x': 0.5}
-                    on_press: 
+                    on_release: 
                         app.root.current = "login"
                         root.manager.transition.direction = "left"
-                
+                    
                 MDLabel:
                     text: "Regisztráció"
                     font_name: "fonts/Comfortaa-Regular.ttf"
                     adaptive_width: True
                     font_size: 15
-            
+                
             Widget:
                 height: "100dp"
-            
+                
             MDTextField:
                 id: user_email
                 hint_text: "E-mail cím"
@@ -255,29 +297,7 @@ WindowManager:
                 size_hint_x: None
                 width: "300dp"
                 icon_left: "email"
-            
-            ClickableTextFieldRound:
-                id: register_pw
-                size_hint_x: None
-                hint_text: "Jelszó"
-                width: "300dp"
-                pos_hint: {"center_x": 0.5}
                 
-            ClickableTextFieldRoundPasswordAgain:
-                id: register_pw_again
-                size_hint_x: None
-                hint_text: "Jelszó újra"
-                width: "300dp"
-                pos_hint: {"center_x": 0.5}
-            
-            MDTextField:
-                id: date_of_birth
-                hint_text: "Születési dátum"
-                pos_hint: {'center_x': 0.5}
-                size_hint_x: None
-                width: "300dp"
-                icon_left: "calendar"
-            
             MDTextField:
                 id: username
                 hint_text: "Felhasználónév"
@@ -285,7 +305,41 @@ WindowManager:
                 size_hint_x: None
                 width: "300dp"
                 icon_left: "account"
-            
+                
+            ClickableTextFieldRound:
+                id: register_pw
+                size_hint_x: None
+                hint_text: "Jelszó"
+                width: "300dp"
+                pos_hint: {"center_x": 0.5}
+                    
+            ClickableTextFieldRoundPasswordAgain:
+                id: register_pw_again
+                size_hint_x: None
+                hint_text: "Jelszó újra"
+                width: "300dp"
+                pos_hint: {"center_x": 0.5}
+                    
+            MDFillRoundFlatIconButton:
+                text: "Születési dátum"
+                icon: "calendar"
+                font_name: "fonts/Comfortaa-Regular.ttf"
+                pos_hint: {'center_x': 0.5}
+                size_hint: None, None
+                width: root.width*0.4
+                on_release: app.show_date_picker()
+                    
+            MDBoxLayout:
+                id: dob_box
+                orientation: "vertical"
+                size_hint: None, None
+                adaptive_height: True
+                adaptive_width: True
+                pos_hint: {'center_x': 0.5}
+                
+            Widget:
+                height: "100dp"
+                
             MDFillRoundFlatIconButton:
                 text: "Regisztráció"
                 icon: "note"
@@ -293,7 +347,7 @@ WindowManager:
                 pos_hint: {'center_x': 0.5}
                 size_hint: None, None
                 width: "300dp"
-                on_press:
+                on_release:
                     app.sign_up()
                     root.manager.transition.direction = "left"
 """
