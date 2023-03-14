@@ -38,6 +38,7 @@ WindowManager:
                 MDFlatButton:
                     text: "helloszevasz"
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    on_release: app.notification_test()
             
         MDBottomNavigationItem:
             name: "profile"
@@ -83,6 +84,7 @@ WindowManager:
                     
 <ForgottenPwContent>
     spacing: "20dp"
+    size_hint_y: None
     text: forgotten_pw_email.text
     height: "120dp"
     
@@ -326,7 +328,7 @@ WindowManager:
                 font_name: "fonts/Comfortaa-Regular.ttf"
                 pos_hint: {'center_x': 0.5}
                 size_hint: None, None
-                width: root.width*0.4
+                width: root.width*0.5
                 on_release: app.show_date_picker()
                     
             MDBoxLayout:

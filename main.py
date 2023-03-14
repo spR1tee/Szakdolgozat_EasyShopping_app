@@ -8,7 +8,13 @@ from kivymd.uix.button import MDFillRoundFlatButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.pickers import MDDatePicker
-from kivymd.uix.textfield import MDTextField
+from plyer import notification
+from plyer import gps
+# from android.permissions import request_permissions, Permission
+from plyer.utils import platform
+from kivy.core.window import Window
+
+Window.size = 360, 640
 
 from kivy_lang.kivy_lang import KV
 import screens
@@ -68,6 +74,9 @@ class EasyShopping(MDApp):
         else:
             self.go_to_home_screen()
 
+    def notification_test(self, mode="normal"):
+        notification.notify("Title", "Test notification message", "EasyShopping")
+
     def sign_up(self):
         if self.root.get_screen("register").ids.user_email.text is "" or self.root.get_screen(
                 "register").ids.register_pw.text is "" or self.root.get_screen(
@@ -109,7 +118,7 @@ class EasyShopping(MDApp):
         content_cls = ForgottenPwContent()
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
         send_button = MDFillRoundFlatButton(text="E-mail küldése", on_release=lambda x: self.get_data(x, content_cls))
-        self.dialog = MDDialog(title="Elfelejtett jelszó", size_hint=(1, 1),
+        self.dialog = MDDialog(title="Elfelejtett jelszó", size_hint=(1, None),
                                type="custom", buttons=[close_button, send_button],
                                content_cls=content_cls)
         self.dialog.open()
@@ -136,7 +145,7 @@ class EasyShopping(MDApp):
     def open_error_dialog(self, error_text):
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
         self.dialog = MDDialog(title="Hiba", text=error_text,
-                               size_hint=(0.7, 1), buttons=[close_button])
+                               size_hint=(1, None), buttons=[close_button])
         self.dialog.open()
 
     def close_dialog(self, obj):
