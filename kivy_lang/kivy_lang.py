@@ -18,17 +18,23 @@ WindowManager:
             icon: "home"
             
             MDBoxLayout:
-                adaptive_size: True
-                pos_hint: {"center_x": .5, "center_y": .5}
+                md_bg_color: app.theme_cls.primary_color
+                # padding: "10dp"
                 
-                MDTextField:
-                    size_hint_x: None
-                    width: "300dp"
-                    pos_hint: {"center_x": .5, "center_y": .5}
+                ScrollView:
+                    bar_width: 0
+                    do_scroll_y: True
+                    
+                    MDGridLayout:
+                        id: shops_grid
+                        adaptive_height: True
+                        cols: 2
+                        padding: [dp(15), dp(15), dp(15), dp(35)]
+                        spacing: dp(15)
             
         MDBottomNavigationItem:
             name: "shops"
-            icon: "shopping"
+            icon: "open-in-app"
             
             MDBoxLayout:
                 adaptive_size: True
@@ -38,7 +44,6 @@ WindowManager:
                 MDFlatButton:
                     text: "helloszevasz"
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
-                    on_release: app.notification_test()
             
         MDBottomNavigationItem:
             name: "profile"
@@ -82,6 +87,65 @@ WindowManager:
                     text: "hellocsákedvencek"
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     on_release: app.view_google()
+
+<TabLabel@Label>:
+    color:0,0,0,0
+    bg_color:0,0,0,0
+    canvas.before:
+        Color:
+            rgba:self.bg_color
+        RoundedRectangle:
+            radius:[25]
+            size:self.size[0]+10,self.size[1]
+            pos:self.pos[0]-5,self.pos[1]
+    
+    size_hint_y:None
+    size_hint_x:None
+    width:self.texture_size[0]
+    height:dp(50)
+    color:0,0,0,1
+    
+<ShopCard>
+    id: ""
+    padding: dp(10)
+    spacing: dp(10)
+    radius: dp(25)
+    ripple_behavior: False
+    image: ""
+    text: ""
+    open_text: "Megnyitás"
+    size_hint: None, None
+    size: "160dp", "200dp"
+    orientation: "vertical"
+    # md_bg_color: app.theme_cls.primary_color
+    
+    Image:
+        source: root.image
+        radius: [15,]
+    
+    MDBoxLayout:
+        orientation: "vertical"
+        
+        MDBoxLayout:
+            orientation: "horizontal"
+            
+            MDLabel:
+                halign: "center"
+                text: root.text
+                font_name: "fonts/Comfortaa-Regular.ttf"
+            
+            MDIconButton:
+                pos_hint: {'center_y': 0.5}
+                icon: "heart-outline"
+                theme_icon_color: "Custom"
+                icon_color: "red"
+                on_release: self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
+        
+        MDTextButton:
+            id: open_button
+            text: root.open_text
+            halign: "center"
+            
                     
 <ForgottenPwContent>
     spacing: "20dp"

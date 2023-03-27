@@ -8,6 +8,7 @@ from kivymd.uix.button import MDFillRoundFlatButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.card import MDCard
 from plyer import notification
 from kivy.core.window import Window
 from kivy_lang.kivy_lang import KV
@@ -55,6 +56,13 @@ class ForgottenPwContent(MDBoxLayout):
     pass
 
 
+class ShopCard(MDCard):
+    text = StringProperty()
+    image = StringProperty()
+    id = StringProperty()
+    pass
+
+
 class EasyShopping(MDApp):
     # firebase_url = "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app/.json"
     dialog = None
@@ -87,10 +95,23 @@ class EasyShopping(MDApp):
         import webbrowser
         webbrowser.open("sample.pdf")
 
+    def upload_shops(self):
+        all_shops = db.child("shops").get()
+
+        for shop in all_shops.each():
+            img_path = "img/" + str(shop.key()) + ".png"
+            self.root.get_screen("nav").ids.shops_grid.add_widget(
+                ShopCard(
+                    text=str(shop.key()).title(),
+                    image=img_path,
+                    id=str(shop.key()),
+                )
+            )
+
     def sign_up(self):
         if self.root.get_screen("register").ids.user_email.text is "" or self.root.get_screen(
                 "register").ids.register_pw.text is "" or self.root.get_screen(
-                "register").ids.register_pw_again.text is "":
+            "register").ids.register_pw_again.text is "":
             self.open_error_dialog("Az összes mezőt kötelező kitölteni!")
             return
 
@@ -114,6 +135,7 @@ class EasyShopping(MDApp):
             self.currently_logged_in_token = login["idToken"]
             self.currently_logged_in_token = auth.refresh(login["refreshToken"])
             self.go_to_nav_screen()
+            self.upload_shops()
             print(self.currently_logged_in_token)
             print(auth.current_user)
         except Exception:
@@ -149,7 +171,8 @@ class EasyShopping(MDApp):
         login = auth.sign_in_anonymous()
         self.currently_logged_in_token = login["idToken"]
         self.currently_logged_in_token = auth.refresh(login["refreshToken"])
-        self.root.current = "nav"
+        self.go_to_nav_screen()
+        self.upload_shops()
         print(auth.current_user)
 
     def open_error_dialog(self, error_text):
