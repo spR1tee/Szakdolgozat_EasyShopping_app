@@ -81,6 +81,7 @@ WindowManager:
                 MDFlatButton:
                     text: "hellocsákedvencek"
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    on_release: app.view_google()
                     
 <ForgottenPwContent>
     spacing: "20dp"
@@ -254,7 +255,7 @@ WindowManager:
     name: "register"
     
     ScrollView:
-        do_scroll_x: False
+        bar_width: 0
         do_scroll_y: True
         
         MDBoxLayout:

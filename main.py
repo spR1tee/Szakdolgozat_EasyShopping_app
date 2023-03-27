@@ -9,17 +9,16 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.pickers import MDDatePicker
 from plyer import notification
-from plyer import gps
-# from android.permissions import request_permissions, Permission
-from plyer.utils import platform
 from kivy.core.window import Window
-
-Window.size = 360, 640
-
 from kivy_lang.kivy_lang import KV
-import screens
 import pyrebase
 import datetime
+# from webview import WebView
+from plyer import gps
+from plyer.utils import platform
+import screens
+
+Window.size = 360, 640
 
 firebase_config = {
     'apiKey': "AIzaSyDCCgo6Iq_Xzrfh1tUJhRh8QTw8T1uhtSo",
@@ -62,6 +61,7 @@ class EasyShopping(MDApp):
     currently_logged_in_token = None
     data = None
     dob = None
+    browser = None
 
     def build(self):
         self.theme_cls.theme_style = "Light"
@@ -74,13 +74,23 @@ class EasyShopping(MDApp):
         else:
             self.go_to_home_screen()
 
+    # def view_google(self, b):
+    #    self.browser = WebView('https://www.google.com',
+    #                          enable_javascript=True,
+    #                           enable_downloads=True,
+    #                           enable_zoom=True)
+
     def notification_test(self, mode="normal"):
         notification.notify("Title", "Test notification message", "EasyShopping")
+
+    def pdf_test(self):
+        import webbrowser
+        webbrowser.open("sample.pdf")
 
     def sign_up(self):
         if self.root.get_screen("register").ids.user_email.text is "" or self.root.get_screen(
                 "register").ids.register_pw.text is "" or self.root.get_screen(
-            "register").ids.register_pw_again.text is "":
+                "register").ids.register_pw_again.text is "":
             self.open_error_dialog("Az összes mezőt kötelező kitölteni!")
             return
 
