@@ -1,0 +1,81 @@
+<NavigationScreen>:
+    name: "nav"
+
+    MDBottomNavigation:
+        id: bottom_nav
+        use_text: False
+
+        MDBottomNavigationItem:
+            name: "home"
+            icon: "home"
+
+            MDBoxLayout:
+                md_bg_color: app.theme_cls.primary_color
+                # padding: "10dp"
+
+                ScrollView:
+                    bar_width: 0
+                    do_scroll_y: True
+
+                    MDGridLayout:
+                        id: shops_grid
+                        adaptive_height: True
+                        cols: 2
+                        padding: [dp(15), dp(15), dp(15), dp(35)]
+                        spacing: dp(15)
+
+        MDBottomNavigationItem:
+            name: "shopping_list"
+            icon: "list-box"
+
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "blue"
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDFlatButton:
+                    text: "helloszevasz"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
+        MDBottomNavigationItem:
+            name: "profile"
+            icon: "account"
+            on_tab_press: app.check_if_registered()
+
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "green"
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDFlatButton:
+                    text: "helloszia"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
+        MDBottomNavigationItem:
+            name: "cards"
+            icon: "credit-card"
+            # on_tab_press: app.check_if_registered()
+
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "green"
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDFlatButton:
+                    text: "hellocsá"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+
+        MDBottomNavigationItem:
+            name: "favorites"
+            icon: "heart"
+            # on_tab_press: app.check_if_registered()
+
+            MDBoxLayout:
+                adaptive_size: True
+                md_bg_color: "green"
+                pos_hint: {"center_x": .5, "center_y": .5}
+
+                MDFlatButton:
+                    text: "hellocsákedvencek"
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    on_release: app.view_google()

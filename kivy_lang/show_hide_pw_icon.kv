@@ -1,0 +1,45 @@
+<ClickableTextFieldRound>:
+    size_hint_y: None
+    height: user_password.height
+    text: user_password.text
+
+    MDTextField:
+        id: user_password
+        hint_text: root.hint_text
+        password: True
+        pos_hint: {'center_x': 0.5}
+        size_hint_x: None
+        width: "300dp"
+        icon_left: "key-variant"
+
+    MDIconButton:
+        icon: "eye-off"
+        pos_hint: {"center_y": .5}
+        pos: user_password.width - self.width + dp(8), 0
+        theme_text_color: "Hint"
+        on_release:
+            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+            user_password.password = False if user_password.password is True else True
+
+<ClickableTextFieldRoundPasswordAgain>:
+    size_hint_y: None
+    height: user_password_again.height
+    text: user_password_again.text
+
+    MDTextField:
+        id: user_password_again
+        hint_text: root.hint_text
+        password: True
+        pos_hint: {'center_x': 0.5}
+        size_hint_x: None
+        width: "300dp"
+        icon_left: "key-variant"
+
+    MDIconButton:
+        icon: "eye-off"
+        pos_hint: {"center_y": .5}
+        pos: user_password_again.width - self.width + dp(8), 0
+        theme_text_color: "Hint"
+        on_release:
+            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+            user_password_again.password = False if user_password_again.password is True else True

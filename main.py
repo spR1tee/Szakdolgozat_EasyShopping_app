@@ -11,7 +11,8 @@ from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.card import MDCard
 from plyer import notification
 from kivy.core.window import Window
-from kivy_lang.kivy_lang import KV
+from controller import Controller
+import controller
 import pyrebase
 import datetime
 # from webview import WebView
@@ -20,20 +21,6 @@ from plyer.utils import platform
 import screens
 
 Window.size = 360, 640
-
-firebase_config = {
-    'apiKey': "AIzaSyDCCgo6Iq_Xzrfh1tUJhRh8QTw8T1uhtSo",
-    'authDomain': "easyshopping-8e66f.firebaseapp.com",
-    'databaseURL': "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app",
-    'projectId': "easyshopping-8e66f",
-    'storageBucket': "easyshopping-8e66f.appspot.com",
-    'messagingSenderId': "1084432810111",
-    'appId': "1:1084432810111:web:a412cda67fce880560bf4a"
-}
-
-firebase = pyrebase.initialize_app(firebase_config)
-auth = firebase.auth()
-db = firebase.database()
 
 
 class WindowManager(ScreenManager):
@@ -70,17 +57,19 @@ class EasyShopping(MDApp):
     data = None
     dob = None
     browser = None
+    controller = Controller()
 
     def build(self):
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Green"
-        return Builder.load_string(KV)
+        return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
-        if auth.current_user is None:
+        self.upload_shops()
+        """if auth.current_user is None:
             self.go_to_login_screen()
         else:
-            self.go_to_home_screen()
+            self.go_to_home_screen()"""
 
     # def view_google(self, b):
     #    self.browser = WebView('https://www.google.com',
@@ -96,7 +85,7 @@ class EasyShopping(MDApp):
         webbrowser.open("sample.pdf")
 
     def upload_shops(self):
-        all_shops = db.child("shops").get()
+        all_shops = self.controller.db.child("shops").get()
 
         for shop in all_shops.each():
             img_path = "img/" + str(shop.key()) + ".png"
@@ -108,42 +97,22 @@ class EasyShopping(MDApp):
                 )
             )
 
-    def sign_up(self):
-        if self.root.get_screen("register").ids.user_email.text is "" or self.root.get_screen(
-                "register").ids.register_pw.text is "" or self.root.get_screen(
-            "register").ids.register_pw_again.text is "":
-            self.open_error_dialog("Az összes mezőt kötelező kitölteni!")
-            return
-
-        if self.root.get_screen("register").ids.register_pw.text != self.root.get_screen(
-                "register").ids.register_pw_again.text:
-            self.open_error_dialog("A megadott jelszavak nem egyeznek!")
-            return
-        try:
-            auth.create_user_with_email_and_password(self.root.get_screen("register").ids.user_email.text,
-                                                     self.root.get_screen("register").ids.register_pw.text)
-            self.store_user_data()
-            self.go_to_login_screen()
-        except Exception:
-            # TODO túl rövid jelszó vagy használt email probléma eldöntésének lekezelése
-            self.open_error_dialog("Már létezik ilyen Email cím!")
-
     def login(self):
         try:
-            login = auth.sign_in_with_email_and_password(self.root.get_screen("login").ids.user_email.text,
-                                                         self.root.get_screen("login").ids.login_pw.text)
+            login = self.controller.auth.sign_in_with_email_and_password(
+                self.root.get_screen("login").ids.user_email.text,
+                self.root.get_screen("login").ids.login_pw.text)
             self.currently_logged_in_token = login["idToken"]
-            self.currently_logged_in_token = auth.refresh(login["refreshToken"])
+            self.currently_logged_in_token = self.controller.auth.refresh(login["refreshToken"])
             self.go_to_nav_screen()
-            self.upload_shops()
             print(self.currently_logged_in_token)
-            print(auth.current_user)
+            print(self.controller.auth.current_user)
         except Exception:
             self.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
 
     def log_out(self):
-        if auth.current_user is not None:
-            auth.current_user = None
+        if self.controller.auth.current_user is not None:
+            self.controller.auth.current_user = None
         self.go_to_login_screen()
 
     def forgotten_password(self):
@@ -160,7 +129,7 @@ class EasyShopping(MDApp):
         value = textfield._get_text()
         if value is not "":
             self.dialog.dismiss()
-            auth.send_password_reset_email(value)
+            self.controller.auth.send_password_reset_email(value)
             print("success")
         else:
             self.open_error_dialog("Add meg az e-mail címed!")
@@ -168,12 +137,11 @@ class EasyShopping(MDApp):
         # hibakezelés TODO
 
     def join_as_guest(self):
-        login = auth.sign_in_anonymous()
+        login = self.controller.auth.sign_in_anonymous()
         self.currently_logged_in_token = login["idToken"]
-        self.currently_logged_in_token = auth.refresh(login["refreshToken"])
+        self.currently_logged_in_token = self.controller.auth.refresh(login["refreshToken"])
         self.go_to_nav_screen()
-        self.upload_shops()
-        print(auth.current_user)
+        print(self.controller.auth.current_user)
 
     def open_error_dialog(self, error_text):
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
@@ -199,7 +167,7 @@ class EasyShopping(MDApp):
                      "username": self.root.get_screen("register").ids.username.text,
                      "timestamp": str(datetime.datetime.now())
                      }
-        db.child("users").child(self.root.get_screen("register").ids.username.text).set(self.data)
+        self.controller.db.child("users").child(self.root.get_screen("register").ids.username.text).set(self.data)
 
     def go_to_login_screen(self):
         self.root.current = "login"
@@ -213,15 +181,15 @@ class EasyShopping(MDApp):
     def go_to_home_screen(self):
         self.root.get_screen("nav").ids.bottom_nav.switch_tab("home")
 
-    def go_to_shops_screen(self):
-        self.root.get_screen("nav").ids.bottom_nav.switch_tab("shops")
+    def go_to_shopping_list_screen(self):
+        self.root.get_screen("nav").ids.bottom_nav.switch_tab("shopping_list")
 
     def go_to_profile_screen(self):
         self.root.get_screen("nav").ids.bottom_nav.switch_tab("profile")
 
     def check_if_registered(self):
-        if "registered" in auth.current_user.keys():
-            if auth.current_user["registered"] is True:
+        if "registered" in self.controller.auth.current_user.keys():
+            if self.controller.auth.current_user["registered"] is True:
                 return
 
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog_go_to_home)

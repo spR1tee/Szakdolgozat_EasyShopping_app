@@ -1,0 +1,43 @@
+<ShopCard>:
+    id: ""
+    padding: dp(10)
+    spacing: dp(10)
+    radius: dp(25)
+    ripple_behavior: False
+    image: ""
+    text: ""
+    open_text: "Megnyitás"
+    size_hint: None, None
+    size: "160dp", "200dp"
+    orientation: "vertical"
+    # md_bg_color: app.theme_cls.primary_color
+
+    Image:
+        source: root.image
+        radius: [15,]
+
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDBoxLayout:
+            orientation: "horizontal"
+
+            MDLabel:
+                halign: "center"
+                text: root.text
+                font_name: "fonts/Comfortaa-Regular.ttf"
+
+            MDIconButton:
+                pos_hint: {'center_y': 0.5}
+                icon: "heart-outline"
+                theme_icon_color: "Custom"
+                icon_color: "red"
+                on_release: self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
+
+        MDBoxLayout:
+            padding: "30dp"
+            MDTextButton:
+                size_hint: None, None
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                id: open_button
+                text: root.open_text
