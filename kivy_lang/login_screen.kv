@@ -54,7 +54,7 @@
                     font_name: "fonts/Comfortaa-Regular.ttf"
                     size_hint: None, None
                     width: "300dp"
-                    on_release: app.login()
+                    on_release: app.controller.login(user_email.text, login_pw.text)
 
                 MDTextButton:
                     text: "Elfelejtett jelszó"
@@ -101,4 +101,4 @@
                 pos_hint: {'center_x': 0.5}
                 size_hint: None, None
                 width: "300dp"
-                on_release: app.join_as_guest()
+                on_release: app.controller.join_as_guest()

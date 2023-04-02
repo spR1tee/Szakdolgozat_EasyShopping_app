@@ -12,8 +12,6 @@ from kivymd.uix.card import MDCard
 from plyer import notification
 from kivy.core.window import Window
 from controller import Controller
-import controller
-import pyrebase
 import datetime
 # from webview import WebView
 from plyer import gps
@@ -51,7 +49,6 @@ class ShopCard(MDCard):
 
 
 class EasyShopping(MDApp):
-    # firebase_url = "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app/.json"
     dialog = None
     currently_logged_in_token = None
     data = None
@@ -80,9 +77,8 @@ class EasyShopping(MDApp):
     def notification_test(self, mode="normal"):
         notification.notify("Title", "Test notification message", "EasyShopping")
 
-    def pdf_test(self):
-        import webbrowser
-        webbrowser.open("sample.pdf")
+    def add_to_favorites(self):
+        pass
 
     def upload_shops(self):
         all_shops = self.controller.db.child("shops").get()
@@ -97,23 +93,15 @@ class EasyShopping(MDApp):
                 )
             )
 
-    def login(self):
-        try:
-            login = self.controller.auth.sign_in_with_email_and_password(
-                self.root.get_screen("login").ids.user_email.text,
-                self.root.get_screen("login").ids.login_pw.text)
-            self.currently_logged_in_token = login["idToken"]
-            self.currently_logged_in_token = self.controller.auth.refresh(login["refreshToken"])
-            self.go_to_nav_screen()
-            print(self.currently_logged_in_token)
-            print(self.controller.auth.current_user)
-        except Exception:
-            self.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
-
-    def log_out(self):
-        if self.controller.auth.current_user is not None:
-            self.controller.auth.current_user = None
-        self.go_to_login_screen()
+        """
+        user email kiszedése realtime databaseből
+        
+        all_users = self.db.child("users").get()
+        for user in all_users.each():
+            print(user.key())
+            print(user.val())
+            print(user.val()["email"])
+        """
 
     def forgotten_password(self):
         content_cls = ForgottenPwContent()
@@ -136,16 +124,15 @@ class EasyShopping(MDApp):
 
         # hibakezelés TODO
 
-    def join_as_guest(self):
-        login = self.controller.auth.sign_in_anonymous()
-        self.currently_logged_in_token = login["idToken"]
-        self.currently_logged_in_token = self.controller.auth.refresh(login["refreshToken"])
-        self.go_to_nav_screen()
-        print(self.controller.auth.current_user)
-
     def open_error_dialog(self, error_text):
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
         self.dialog = MDDialog(title="Hiba", text=error_text,
+                               size_hint=(1, None), buttons=[close_button])
+        self.dialog.open()
+
+    def open_success_dialog(self, error_text):
+        close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
+        self.dialog = MDDialog(title="Sikeres regisztráció", text=error_text,
                                size_hint=(1, None), buttons=[close_button])
         self.dialog.open()
 
@@ -167,7 +154,10 @@ class EasyShopping(MDApp):
                      "username": self.root.get_screen("register").ids.username.text,
                      "timestamp": str(datetime.datetime.now())
                      }
-        self.controller.db.child("users").child(self.root.get_screen("register").ids.username.text).set(self.data)
+        try:
+            self.controller.db.child("users").child(self.root.get_screen("register").ids.username.text).set(self.data)
+        except Exception:
+            self.open_error_dialog("Error while storing user data")
 
     def go_to_login_screen(self):
         self.root.current = "login"

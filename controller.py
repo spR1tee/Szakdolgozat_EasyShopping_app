@@ -18,6 +18,7 @@ class Controller:
         self.auth = self.firebase.auth()
         self.db = self.firebase.database()
         self.currently_logged_in_token = None
+        self.currently_logged_in_email = None
 
     def sign_up(self, email, password, password_again):
         app = App.get_running_app()
@@ -37,11 +38,36 @@ class Controller:
             self.auth.create_user_with_email_and_password(email, password)
             app.store_user_data()
             app.go_to_login_screen()
+            app.open_success_dialog("Sikeres regisztráció, most már bejelentkezhetsz!")
         except Exception:
             app.open_error_dialog("Már létezik ilyen Email cím!")
 
-    def login(self):
-        pass
+    def login(self, email, password):
+        app = App.get_running_app()
+        try:
+            login = self.auth.sign_in_with_email_and_password(email, password)
+            self.currently_logged_in_token = login["idToken"]
+            self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
+            self.currently_logged_in_email = email
+            app.go_to_nav_screen()
+            print(self.currently_logged_in_token)
+            print(self.auth.current_user)
+        except Exception:
+            app.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
 
     def join_as_guest(self):
-        pass
+        app = App.get_running_app()
+        login = self.auth.sign_in_anonymous()
+        self.currently_logged_in_token = login["idToken"]
+        self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
+        app.go_to_nav_screen()
+        print(self.auth.current_user)
+
+    def log_out(self):
+        app = App.get_running_app()
+        if self.auth.current_user is not None:
+            self.auth.current_user = None
+        app.go_to_login_screen()
+
+
+
