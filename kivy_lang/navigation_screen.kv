@@ -27,20 +27,33 @@
         MDBottomNavigationItem:
             name: "shopping_list"
             icon: "list-box"
+            on_tab_press: app.check_if_registered()
 
-            MDBoxLayout:
-                adaptive_size: True
-                md_bg_color: "blue"
-                pos_hint: {"center_x": .5, "center_y": .5}
+            MDFloatLayout:
+                MDLabel:
+                    id: task_label
+                    halign: 'center'
+                    markup: True
+                    text: "[b]Bevásárlólista[/b]"
+                    pos_hint: {'y': .45}
 
-                MDFlatButton:
-                    text: "helloszevasz"
-                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                ScrollView:
+                    pos_hint: {'center_y': .5, 'center_x': .5}
+                    size_hint: .9, .8
+
+                    MDList:
+                        id: container
+
+                MDFloatingActionButton:
+                    icon: 'plus-thick'
+                    on_release: app.show_item_dialog()
+                    elevation_normal: 12
+                    pos_hint: {'x': .8, 'y':.05}
 
         MDBottomNavigationItem:
             name: "profile"
             icon: "account"
-            on_tab_press: app.check_if_registered()
+            # on_tab_press: app.check_if_registered()
 
             MDBoxLayout:
                 adaptive_size: True
@@ -50,6 +63,7 @@
                 MDFlatButton:
                     text: "helloszia"
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    on_release: app.controller.log_out()
 
         MDBottomNavigationItem:
             name: "cards"

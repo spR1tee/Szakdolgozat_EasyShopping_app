@@ -48,8 +48,9 @@ class Controller:
             login = self.auth.sign_in_with_email_and_password(email, password)
             self.currently_logged_in_token = login["idToken"]
             self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
-            self.currently_logged_in_email = email
+            self.currently_logged_in_email = email.split(".")[0]
             app.go_to_nav_screen()
+            app.upload_shopping_list()
             print(self.currently_logged_in_token)
             print(self.auth.current_user)
         except Exception:
@@ -67,7 +68,11 @@ class Controller:
         app = App.get_running_app()
         if self.auth.current_user is not None:
             self.auth.current_user = None
+            self.currently_logged_in_email = None
         app.go_to_login_screen()
+        print(self.currently_logged_in_email)
+        print(self.currently_logged_in_token)
+        print(self.auth.current_user)
 
 
 

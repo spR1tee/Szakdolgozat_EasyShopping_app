@@ -1,0 +1,15 @@
+<ListItemWithCheckbox>:
+    id: the_list_item
+    markup: True
+
+    LeftCheckbox:
+        id: check
+        on_release:
+            root.mark(check, the_list_item)
+
+    IconRightWidget:
+        icon: 'trash-can-outline'
+        theme_text_color: "Custom"
+        text_color: 1, 0, 0, 1
+        on_release:
+            root.delete_item(check, the_list_item)

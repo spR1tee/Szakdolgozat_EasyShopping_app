@@ -1,3 +1,4 @@
+from kivy.core.text.markup import MarkupLabel
 from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.properties import StringProperty
@@ -6,6 +7,8 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFillRoundFlatButton
 from kivymd.uix.label import MDLabel
+from kivymd.uix.list import ILeftBodyTouch, OneLineAvatarIconListItem
+from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.card import MDCard
@@ -48,12 +51,48 @@ class ShopCard(MDCard):
     pass
 
 
+class DialogContent(MDBoxLayout):
+    pass
+
+
+class ListItemWithCheckbox(OneLineAvatarIconListItem):
+
+    def __init__(self, pk=None, **kwargs):
+        super().__init__(**kwargs)
+
+    def mark(self, check, the_list_item):
+        app = MDApp.get_running_app()
+        if check.active:
+            the_list_item.text = "[s]" + the_list_item.text + "[/s]"
+            print(MarkupLabel(the_list_item.text).markup)
+            data = {MarkupLabel(the_list_item.text).markup[1]: 1}
+            app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
+               "shopping_list").update(data)
+        else:
+            the_list_item.text = MarkupLabel(the_list_item.text).markup[1]
+            data = {the_list_item.text: 0}
+            app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
+                "shopping_list").update(data)
+
+    def delete_item(self, check, the_list_item):
+        app = MDApp.get_running_app()
+        text = MarkupLabel(the_list_item.text).markup[1] if check.active else MarkupLabel(the_list_item.text).markup[0]
+        app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
+            "shopping_list").child(text).remove()
+        self.parent.remove_widget(the_list_item)
+
+
+class LeftCheckbox(ILeftBodyTouch, MDCheckbox):
+    pass
+
+
 class EasyShopping(MDApp):
     dialog = None
     currently_logged_in_token = None
     data = None
     dob = None
     browser = None
+    item_list_dialog = None
     controller = Controller()
 
     def build(self):
@@ -73,6 +112,49 @@ class EasyShopping(MDApp):
     #                          enable_javascript=True,
     #                           enable_downloads=True,
     #                           enable_zoom=True)
+
+    def show_item_dialog(self):
+        if not self.item_list_dialog:
+            self.item_list_dialog = MDDialog(
+                title="Elem hozzáadása",
+                type="custom",
+                content_cls=DialogContent(),
+            )
+
+        self.item_list_dialog.open()
+
+    def close_dialog_new(self):
+        self.item_list_dialog.dismiss()
+
+    def add_item(self, item):
+        if item.text is not "":
+            self.root.get_screen("nav").ids.container.add_widget(ListItemWithCheckbox(text=item.text))
+            print(item.text)
+            data = {item.text: 0}
+            self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+                "shopping_list").update(data)
+            item.text = ""
+        else:
+            self.open_error_dialog("Add meg a termék nevét!")
+
+    def upload_shopping_list(self):
+        shopping_list = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child("shopping_list").get()
+        try:
+            if shopping_list is not "":
+                for item in shopping_list.each():
+                    if item.val() == 0:
+                        add_item = ListItemWithCheckbox(text=item.key())
+                        self.root.get_screen("nav").ids.container.add_widget(add_item)
+                    elif item.val() == 1:
+                        add_item = ListItemWithCheckbox(text="[s]" + item.key() + "[/s]")
+                        add_item.ids.check.active = True
+                        self.root.get_screen("nav").ids.container.add_widget(add_item)
+                    print(item.key())
+                    print(item.val())
+        except Exception as e:
+            print(e)
+            pass
+
 
     def notification_test(self, mode="normal"):
         notification.notify("Title", "Test notification message", "EasyShopping")
@@ -152,10 +234,12 @@ class EasyShopping(MDApp):
         self.data = {"email": self.root.get_screen("register").ids.user_email.text,
                      "date_of_birth": self.dob,
                      "username": self.root.get_screen("register").ids.username.text,
-                     "timestamp": str(datetime.datetime.now())
+                     "timestamp": str(datetime.datetime.now()),
+                     "shopping_list": "",
                      }
         try:
-            self.controller.db.child("users").child(self.root.get_screen("register").ids.username.text).set(self.data)
+            email = self.root.get_screen("register").ids.user_email.text.split(".")[0]
+            self.controller.db.child("users").child(email).set(self.data)
         except Exception:
             self.open_error_dialog("Error while storing user data")
 

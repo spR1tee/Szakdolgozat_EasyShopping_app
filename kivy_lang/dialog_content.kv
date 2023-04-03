@@ -1,0 +1,29 @@
+<DialogContent>:
+    orientation: "vertical"
+    spacing: "10dp"
+    size_hint: 1, None
+    height: "130dp"
+
+    GridLayout:
+        rows: 1
+
+        MDTextField:
+            id: item_text
+            hint_text: "Új elem hozzáadása"
+            pos_hint: {"center_y": .4}
+            max_text_length: 50
+            on_text_validate: (app.add_item(item_text), app.close_dialog_new())
+
+    BoxLayout:
+        orientation: 'horizontal'
+
+        MDRaisedButton:
+            text: "MENTÉS"
+            on_release: (app.add_item(item_text), app.close_dialog_new())
+
+        Widget:
+            width: "250dp"
+
+        MDFlatButton:
+            text: 'MÉGSE'
+            on_release: app.close_dialog_new()
