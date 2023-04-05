@@ -1,11 +1,12 @@
 <ShopCard>:
-    id: ""
+    shop_name: ""
+    image: ""
+    text: ""
+    icon: ""
     padding: dp(10)
     spacing: dp(10)
     radius: dp(25)
     ripple_behavior: False
-    image: ""
-    text: ""
     open_text: "Megnyitás"
     size_hint: None, None
     size: "160dp", "200dp"
@@ -29,10 +30,12 @@
 
             MDIconButton:
                 pos_hint: {'center_y': 0.5}
-                icon: "heart-outline"
+                icon: root.icon
                 theme_icon_color: "Custom"
                 icon_color: "red"
-                on_release: self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
+                on_release:
+                    app.add_to_favorites(root.shop_name)
+                    self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
 
         MDBoxLayout:
             padding: "30dp"

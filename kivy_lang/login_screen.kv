@@ -7,7 +7,6 @@
         spacing: 10
         padding: 15
         elevation: 10
-        md_bg_color: "white"
 
         FitImage:
             source: "img/logo.png"
@@ -82,7 +81,7 @@
                 size_hint: None, None
                 width: "300dp"
                 on_release:
-                    app.root.current = "register"
+                    root.manager.current = "register"
                     root.manager.transition.direction = "right"
 
             MDLabel:

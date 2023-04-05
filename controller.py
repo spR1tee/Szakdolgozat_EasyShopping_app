@@ -22,7 +22,7 @@ class Controller:
 
     def sign_up(self, email, password, password_again):
         app = App.get_running_app()
-        if email is "" or password is "" or password_again is "" or app.dob is None:
+        if email == "" or password == "" or password_again == "" or app.dob is None:
             app.open_error_dialog("Az összes mezőt kötelező kitölteni!")
             return
 
@@ -49,6 +49,7 @@ class Controller:
             self.currently_logged_in_token = login["idToken"]
             self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
             self.currently_logged_in_email = email.split(".")[0]
+            app.upload_shops()
             app.go_to_nav_screen()
             app.upload_shopping_list()
             print(self.currently_logged_in_token)
@@ -61,6 +62,7 @@ class Controller:
         login = self.auth.sign_in_anonymous()
         self.currently_logged_in_token = login["idToken"]
         self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
+        app.upload_shops()
         app.go_to_nav_screen()
         print(self.auth.current_user)
 

@@ -1,25 +1,20 @@
-from kivy.core.text.markup import MarkupLabel
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.properties import StringProperty
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.button import MDFillRoundFlatButton
-from kivymd.uix.label import MDLabel
-from kivymd.uix.list import ILeftBodyTouch, OneLineAvatarIconListItem
-from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.relativelayout import MDRelativeLayout
-from kivymd.uix.pickers import MDDatePicker
-from kivymd.uix.card import MDCard
-from plyer import notification
-from kivy.core.window import Window
-from controller import Controller
 import datetime
+
+from kivy.core.window import Window
+from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager
+from kivymd.app import MDApp
+from kivymd.uix.button import MDFillRoundFlatButton
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.label import MDLabel
+from kivymd.uix.pickers import MDDatePicker
+from kivymd.toast import toast
+from plyer import notification
+
+from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent
+from controller import Controller
+
 # from webview import WebView
-from plyer import gps
-from plyer.utils import platform
-import screens
 
 Window.size = 360, 640
 
@@ -28,67 +23,8 @@ class WindowManager(ScreenManager):
     pass
 
 
-class ClickableTextFieldRound(MDRelativeLayout):
-    text = StringProperty()
-    hint_text = StringProperty()
-    pass
-
-
-class ClickableTextFieldRoundPasswordAgain(MDRelativeLayout):
-    text = StringProperty()
-    hint_text = StringProperty()
-    pass
-
-
-class ForgottenPwContent(MDBoxLayout):
-    pass
-
-
-class ShopCard(MDCard):
-    text = StringProperty()
-    image = StringProperty()
-    id = StringProperty()
-    pass
-
-
-class DialogContent(MDBoxLayout):
-    pass
-
-
-class ListItemWithCheckbox(OneLineAvatarIconListItem):
-
-    def __init__(self, pk=None, **kwargs):
-        super().__init__(**kwargs)
-
-    def mark(self, check, the_list_item):
-        app = MDApp.get_running_app()
-        if check.active:
-            the_list_item.text = "[s]" + the_list_item.text + "[/s]"
-            print(MarkupLabel(the_list_item.text).markup)
-            data = {MarkupLabel(the_list_item.text).markup[1]: 1}
-            app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
-               "shopping_list").update(data)
-        else:
-            the_list_item.text = MarkupLabel(the_list_item.text).markup[1]
-            data = {the_list_item.text: 0}
-            app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
-                "shopping_list").update(data)
-
-    def delete_item(self, check, the_list_item):
-        app = MDApp.get_running_app()
-        text = MarkupLabel(the_list_item.text).markup[1] if check.active else MarkupLabel(the_list_item.text).markup[0]
-        app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
-            "shopping_list").child(text).remove()
-        self.parent.remove_widget(the_list_item)
-
-
-class LeftCheckbox(ILeftBodyTouch, MDCheckbox):
-    pass
-
-
 class EasyShopping(MDApp):
     dialog = None
-    currently_logged_in_token = None
     data = None
     dob = None
     browser = None
@@ -101,7 +37,7 @@ class EasyShopping(MDApp):
         return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
-        self.upload_shops()
+        # self.upload_shops()
         """if auth.current_user is None:
             self.go_to_login_screen()
         else:
@@ -127,7 +63,7 @@ class EasyShopping(MDApp):
         self.item_list_dialog.dismiss()
 
     def add_item(self, item):
-        if item.text is not "":
+        if item.text != "":
             self.root.get_screen("nav").ids.container.add_widget(ListItemWithCheckbox(text=item.text))
             print(item.text)
             data = {item.text: 0}
@@ -138,9 +74,10 @@ class EasyShopping(MDApp):
             self.open_error_dialog("Add meg a termék nevét!")
 
     def upload_shopping_list(self):
-        shopping_list = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child("shopping_list").get()
+        shopping_list = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+            "shopping_list").get()
         try:
-            if shopping_list is not "":
+            if shopping_list is not None:
                 for item in shopping_list.each():
                     if item.val() == 0:
                         add_item = ListItemWithCheckbox(text=item.key())
@@ -155,15 +92,39 @@ class EasyShopping(MDApp):
             print(e)
             pass
 
-
     def notification_test(self, mode="normal"):
         notification.notify("Title", "Test notification message", "EasyShopping")
 
-    def add_to_favorites(self):
-        pass
+    def add_to_favorites(self, shop_name):
+        if "registered" not in self.controller.auth.current_user.keys():
+            toast("Be kell jelentkezned ahhoz, hogy a kedvenceidhez add!")
+            return
+
+        favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+            "favorites").get()
+        if favorites is not None:
+            for fav in favorites.each():
+                if fav.key() == shop_name:
+                    self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+                        "favorites").child(shop_name).remove()
+                    return
+
+        data = {shop_name: ""}
+        self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+            "favorites").update(data)
 
     def upload_shops(self):
         all_shops = self.controller.db.child("shops").get()
+        in_fav = []
+        if "registered" in self.controller.auth.current_user.keys():
+            if self.controller.auth.current_user["registered"] is True:
+                favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+                    "favorites").get()
+                if favorites is not None:
+                    for shop in all_shops.each():
+                        for fav in favorites.each():
+                            if shop.key() == fav.key():
+                                in_fav.append(shop.key())
 
         for shop in all_shops.each():
             img_path = "img/" + str(shop.key()) + ".png"
@@ -171,19 +132,10 @@ class EasyShopping(MDApp):
                 ShopCard(
                     text=str(shop.key()).title(),
                     image=img_path,
-                    id=str(shop.key()),
+                    shop_name=str(shop.key()),
+                    icon="heart" if shop.key() in in_fav else "heart-outline",
                 )
             )
-
-        """
-        user email kiszedése realtime databaseből
-        
-        all_users = self.db.child("users").get()
-        for user in all_users.each():
-            print(user.key())
-            print(user.val())
-            print(user.val()["email"])
-        """
 
     def forgotten_password(self):
         content_cls = ForgottenPwContent()
@@ -197,7 +149,7 @@ class EasyShopping(MDApp):
     def get_data(self, x, content_cls):
         textfield = content_cls.ids.forgotten_pw_email
         value = textfield._get_text()
-        if value is not "":
+        if value != "":
             self.dialog.dismiss()
             self.controller.auth.send_password_reset_email(value)
             print("success")
@@ -236,6 +188,7 @@ class EasyShopping(MDApp):
                      "username": self.root.get_screen("register").ids.username.text,
                      "timestamp": str(datetime.datetime.now()),
                      "shopping_list": "",
+                     "favorites": "",
                      }
         try:
             email = self.root.get_screen("register").ids.user_email.text.split(".")[0]
@@ -243,7 +196,7 @@ class EasyShopping(MDApp):
         except Exception:
             self.open_error_dialog("Error while storing user data")
 
-    def go_to_login_screen(self):
+    def go_to_login_screen(self, x=None):
         self.root.current = "login"
 
     def go_to_register_screen(self):
@@ -269,7 +222,7 @@ class EasyShopping(MDApp):
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog_go_to_home)
         register_button = MDFillRoundFlatButton(text="Regisztrálok", on_release=self.close_dialog_go_to_register)
         self.dialog = MDDialog(title="Hiba",
-                               text="Sajnáljuk, de ez az oldal csak regisztrált felhasználók számára érhető el.",
+                               text="Sajnáljuk, de ez a funkció csak regisztrált felhasználók számára érhető el.",
                                size_hint=(0.7, 1), buttons=[close_button, register_button])
         self.dialog.open()
 

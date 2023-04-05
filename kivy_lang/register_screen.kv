@@ -1,103 +1,76 @@
 <RegisterScreen>:
     name: "register"
 
-    ScrollView:
-        bar_width: 0
-        do_scroll_y: True
+    MDCard:
+        orientation: "vertical"
+        size: root.width, root.height
+        spacing: 10
+        padding: [dp(0), dp(0), dp(0), dp(60)]
+
+        MDTopAppBar:
+            id: reg_
+            pos_hint: {'top': 1}
+            # type_height: "small"
+            left_action_items: [["arrow-left", lambda x: app.go_to_login_screen(x)]]
+            title: "Regisztráció"
+
+        MDTextField:
+            id: user_email
+            hint_text: "E-mail cím"
+            helper_text: "Ezzel az E-mail címmel tudsz majd bejelentkezni"
+            helper_text_mode: "on_focus"
+            pos_hint: {'center_x': 0.5}
+            size_hint_x: None
+            width: "300dp"
+            icon_left: "email"
+
+        MDTextField:
+            id: username
+            hint_text: "Felhasználónév"
+            pos_hint: {'center_x': 0.5}
+            size_hint_x: None
+            width: "300dp"
+            icon_left: "account"
+
+        ClickableTextFieldRound:
+            id: register_pw
+            size_hint_x: None
+            hint_text: "Jelszó"
+            width: "300dp"
+            pos_hint: {"center_x": 0.5}
+
+        ClickableTextFieldRoundPasswordAgain:
+            id: register_pw_again
+            size_hint_x: None
+            hint_text: "Jelszó újra"
+            width: "300dp"
+            pos_hint: {"center_x": 0.5}
+
+        MDFillRoundFlatIconButton:
+            text: "Születési dátum"
+            icon: "calendar"
+            font_name: "fonts/Comfortaa-Regular.ttf"
+            pos_hint: {'center_x': 0.5}
+            size_hint: None, None
+            width: root.width*0.5
+            on_release: app.show_date_picker()
 
         MDBoxLayout:
+            id: dob_box
             orientation: "vertical"
-            size: root.width, root.height
-            spacing: 10
-            padding: 15
-            elevation: 10
-            md_bg_color: "white"
+            size_hint: None, None
+            adaptive_width: True
+            adaptive_height: True
+            pos_hint: {'center_x': 0.5}
 
-            MDBoxLayout:
-                orientation: "horizontal"
-                size_hint: None, None
-                pos_hint: {'center_x': 0.4}
-                spacing: 15
-                adaptive_height: True
-                adaptive_width: True
-
-                MDIconButton:
-                    icon: "arrow-left"
-                    size_hint: None, None
-                    pos_hint: {'center_x': 0.5}
-                    on_release:
-                        app.root.current = "login"
-                        root.manager.transition.direction = "left"
-
-                MDLabel:
-                    text: "Regisztráció"
-                    font_name: "fonts/Comfortaa-Regular.ttf"
-                    adaptive_width: True
-                    font_size: 15
-
-            Widget:
-                height: "100dp"
-
-            MDTextField:
-                id: user_email
-                hint_text: "E-mail cím"
-                helper_text: "Ezzel az E-mail címmel tudsz majd bejelentkezni"
-                helper_text_mode: "on_focus"
-                pos_hint: {'center_x': 0.5}
-                size_hint_x: None
-                width: "300dp"
-                icon_left: "email"
-
-            MDTextField:
-                id: username
-                hint_text: "Felhasználónév"
-                pos_hint: {'center_x': 0.5}
-                size_hint_x: None
-                width: "300dp"
-                icon_left: "account"
-
-            ClickableTextFieldRound:
-                id: register_pw
-                size_hint_x: None
-                hint_text: "Jelszó"
-                width: "300dp"
-                pos_hint: {"center_x": 0.5}
-
-            ClickableTextFieldRoundPasswordAgain:
-                id: register_pw_again
-                size_hint_x: None
-                hint_text: "Jelszó újra"
-                width: "300dp"
-                pos_hint: {"center_x": 0.5}
-
-            MDFillRoundFlatIconButton:
-                text: "Születési dátum"
-                icon: "calendar"
-                font_name: "fonts/Comfortaa-Regular.ttf"
-                pos_hint: {'center_x': 0.5}
-                size_hint: None, None
-                width: root.width*0.5
-                on_release: app.show_date_picker()
-
-            MDBoxLayout:
-                id: dob_box
-                orientation: "vertical"
-                size_hint: None, None
-                adaptive_height: True
-                adaptive_width: True
-                pos_hint: {'center_x': 0.5}
-
-            Widget:
-                height: "100dp"
-
-            MDFillRoundFlatIconButton:
-                text: "Regisztráció"
-                icon: "note"
-                font_name: "fonts/Comfortaa-Regular.ttf"
-                pos_hint: {'center_x': 0.5}
-                size_hint: None, None
-                width: "300dp"
-                on_release:
-                    # app.sign_up()
-                    app.controller.sign_up(user_email.text, register_pw.text, register_pw_again.text)
-                    root.manager.transition.direction = "left"
+        MDFillRoundFlatIconButton:
+            text: "Regisztráció"
+            icon: "note"
+            font_name: "fonts/Comfortaa-Regular.ttf"
+            pos_hint: {'center_x': 0.5}
+            size_hint: None, None
+            width: "300dp"
+            on_release:
+                # app.sign_up()
+                app.controller.sign_up(user_email.text, register_pw.text, register_pw_again.text)
+                root.manager.transition.direction = "left"
