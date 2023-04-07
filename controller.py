@@ -52,6 +52,7 @@ class Controller:
             app.upload_shops()
             app.go_to_nav_screen()
             app.upload_shopping_list()
+            app.refresh_favorites()
             print(self.currently_logged_in_token)
             print(self.auth.current_user)
         except Exception:

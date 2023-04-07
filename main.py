@@ -102,16 +102,19 @@ class EasyShopping(MDApp):
 
         favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
             "favorites").get()
-        if favorites is not None:
+
+        if favorites.each() is not None:
             for fav in favorites.each():
                 if fav.key() == shop_name:
                     self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
                         "favorites").child(shop_name).remove()
+                    self.refresh_favorites()
                     return
 
         data = {shop_name: ""}
         self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
             "favorites").update(data)
+        self.refresh_favorites()
 
     def upload_shops(self):
         all_shops = self.controller.db.child("shops").get()
@@ -120,7 +123,7 @@ class EasyShopping(MDApp):
             if self.controller.auth.current_user["registered"] is True:
                 favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
                     "favorites").get()
-                if favorites is not None:
+                if favorites.each() is not None and favorites.each() != "":
                     for shop in all_shops.each():
                         for fav in favorites.each():
                             if shop.key() == fav.key():
@@ -136,6 +139,24 @@ class EasyShopping(MDApp):
                     icon="heart" if shop.key() in in_fav else "heart-outline",
                 )
             )
+
+    def refresh_favorites(self):
+        self.root.get_screen("nav").ids.favs_grid.clear_widgets()
+        favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+                "favorites").get()
+        if favorites.each() is not None and favorites.each() != "":
+            for fav in favorites.each():
+                img_path = "img/" + str(fav.key()) + ".png"
+                self.root.get_screen("nav").ids.favs_grid.add_widget(
+                    ShopCard(
+                        text=str(fav.key()).title(),
+                        image=img_path,
+                        shop_name=str(fav.key()),
+                        icon="heart",
+                    )
+                )
+        self.root.get_screen("nav").ids.shops_grid.clear_widgets()
+        self.upload_shops()
 
     def forgotten_password(self):
         content_cls = ForgottenPwContent()
