@@ -1,0 +1,33 @@
+<MagicButton@MagicBehavior+MDIconButton>
+
+
+<MySwiper@MDSwiperItem>
+    text: ""
+    type: ""
+    label_text: ""
+    image: ""
+
+    RelativeLayout:
+
+        FitImage:
+            source: root.image
+            radius: [20,]
+
+        MDBoxLayout:
+            adaptive_height: True
+            spacing: "12dp"
+
+            MagicButton:
+                id: icon
+                icon: root.text
+                user_font_size: "56sp"
+                # opposite_colors: True
+
+            MDLabel:
+                text: root.label_text
+                font_name: "fonts/Comfortaa-Regular.ttf"
+                font_size: 18
+                size_hint_y: None
+                height: self.texture_size[1]
+                pos_hint: {"center_y": .5}
+                # opposite_colors: True

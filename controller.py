@@ -65,6 +65,7 @@ class Controller:
         self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
         app.upload_shops()
         app.go_to_nav_screen()
+        app.go_to_home_screen()
         print(self.auth.current_user)
 
     def log_out(self):

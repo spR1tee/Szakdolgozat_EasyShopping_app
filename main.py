@@ -73,6 +73,32 @@ class EasyShopping(MDApp):
         else:
             self.open_error_dialog("Add meg a termék nevét!")
 
+    def check_favorites(self):
+        all_shops = self.controller.db.child("shops").get()
+        in_fav = []
+        if "registered" in self.controller.auth.current_user.keys():
+            if self.controller.auth.current_user["registered"] is True:
+                favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
+                    "favorites").get()
+                if favorites.each() is not None and favorites.each() != "":
+                    for shop in all_shops.each():
+                        for fav in favorites.each():
+                            if shop.key() == fav.key():
+                                in_fav.append(shop.key())
+
+        return in_fav
+
+    def create_card(self, shop_name, favorites):
+        img_path = "img/" + str(shop_name) + ".png"
+        self.root.get_screen("nav").ids.shops_grid.add_widget(
+            ShopCard(
+                text=str(shop_name).title(),
+                image=img_path,
+                shop_name=str(shop_name),
+                icon="heart" if shop_name in favorites else "heart-outline",
+            )
+        )
+
     def upload_shopping_list(self):
         shopping_list = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
             "shopping_list").get()
@@ -91,6 +117,20 @@ class EasyShopping(MDApp):
         except Exception as e:
             print(e)
             pass
+
+    def filter_shops(self, shop_type):
+        self.root.get_screen("nav").ids.shops_grid.clear_widgets()
+
+        if shop_type == "all":
+            self.upload_shops()
+            return
+
+        all_shops = self.controller.db.child("shops").get()
+        favs = self.check_favorites()
+
+        for shop in all_shops.each():
+            if shop.val()["type"] == shop_type:
+                self.create_card(shop.key(), favs)
 
     def notification_test(self, mode="normal"):
         notification.notify("Title", "Test notification message", "EasyShopping")
@@ -118,27 +158,10 @@ class EasyShopping(MDApp):
 
     def upload_shops(self):
         all_shops = self.controller.db.child("shops").get()
-        in_fav = []
-        if "registered" in self.controller.auth.current_user.keys():
-            if self.controller.auth.current_user["registered"] is True:
-                favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-                    "favorites").get()
-                if favorites.each() is not None and favorites.each() != "":
-                    for shop in all_shops.each():
-                        for fav in favorites.each():
-                            if shop.key() == fav.key():
-                                in_fav.append(shop.key())
+        favs = self.check_favorites()
 
         for shop in all_shops.each():
-            img_path = "img/" + str(shop.key()) + ".png"
-            self.root.get_screen("nav").ids.shops_grid.add_widget(
-                ShopCard(
-                    text=str(shop.key()).title(),
-                    image=img_path,
-                    shop_name=str(shop.key()),
-                    icon="heart" if shop.key() in in_fav else "heart-outline",
-                )
-            )
+            self.create_card(shop.key(), favs)
 
     def refresh_favorites(self):
         self.root.get_screen("nav").ids.favs_grid.clear_widgets()

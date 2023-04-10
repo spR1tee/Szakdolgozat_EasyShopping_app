@@ -1,3 +1,5 @@
+#:include kivy_lang/swiper_item.kv
+
 <NavigationScreen>:
     name: "nav"
 
@@ -10,8 +12,47 @@
             icon: "home"
 
             MDBoxLayout:
+                orientation: "vertical"
                 md_bg_color: app.theme_cls.primary_color
                 # padding: "10dp"
+
+                MDBoxLayout:
+                    md_bg_color: app.theme_cls.primary_color
+                    padding: dp(10)
+                    adaptive_height: True
+
+                    MDSwiper:
+                        size_hint_y: None
+                        height: dp(150)
+                        # y: root.height - self.height - toolbar.height - dp(20)
+                        on_swipe:
+                            self.get_current_item().ids.icon.shake()
+                            app.filter_shops(self.get_current_item().type)
+
+                        MySwiper:
+                            text: "cart"
+                            type: "all"
+                            label_text: "Minden"
+                            image: "img/food.png"
+
+                        MySwiper:
+                            text: "food"
+                            type: "food"
+                            label_text: "Élelmiszer"
+                            image: "img/food.png"
+
+                        MySwiper:
+                            type: "electronics"
+                            text: "laptop"
+                            label_text: "Elektronika"
+                            image: "img/food.png"
+
+                        MySwiper:
+                            type: "clothing"
+                            text: "tshirt-crew"
+                            label_text: "Ruházat"
+                            image: "img/food.png"
+
 
                 ScrollView:
                     bar_width: 0
