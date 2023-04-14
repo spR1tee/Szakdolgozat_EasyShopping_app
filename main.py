@@ -1,18 +1,22 @@
 import datetime
+import fitz
 
+from PyPDF2 import PdfReader
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager
 from kivymd.app import MDApp
+from kivymd.toast import toast
 from kivymd.uix.button import MDFillRoundFlatButton
 from kivymd.uix.dialog import MDDialog
+from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
 from kivymd.uix.label import MDLabel
 from kivymd.uix.pickers import MDDatePicker
-from kivymd.toast import toast
-from plyer import notification
 
-from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent
+from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
 from controller import Controller
+
+# from plyer import notification
 
 # from webview import WebView
 
@@ -29,6 +33,7 @@ class EasyShopping(MDApp):
     dob = None
     browser = None
     item_list_dialog = None
+    type = "all"
     controller = Controller()
 
     def build(self):
@@ -37,17 +42,21 @@ class EasyShopping(MDApp):
         return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
-        # self.upload_shops()
-        """if auth.current_user is None:
-            self.go_to_login_screen()
-        else:
-            self.go_to_home_screen()"""
+        self.root.get_screen("nav").ids.toolbar_container.add_widget(
+            MDExpansionPanel(
+                icon="magnify",
+                content=ExpansionContent(),
+                panel_cls=MDExpansionPanelOneLine(text="Keresés"),
+            )
+        )
 
-    # def view_google(self, b):
-    #    self.browser = WebView('https://www.google.com',
-    #                          enable_javascript=True,
-    #                           enable_downloads=True,
-    #                           enable_zoom=True)
+    """
+    def view_google(self, b):
+        self.browser = WebView('https://s7g10.scene7.com/is/content/aldi/Online_akcios_ujsag_2023_04_13_1',
+                               enable_javascript=True,
+                               enable_downloads=True,
+                               enable_zoom=True)
+    """
 
     def show_item_dialog(self):
         if not self.item_list_dialog:
@@ -61,6 +70,18 @@ class EasyShopping(MDApp):
 
     def close_dialog_new(self):
         self.item_list_dialog.dismiss()
+
+    def perform_search(self, text):
+        """reader = PdfReader("aldi.pdf")
+        for page in reader.pages:
+            if text in page.extract_text():
+                print("VAN!")
+                break"""
+
+        doc = fitz.open('aldi.pdf')
+        for page in doc:
+            if text in page.get_text():
+                print("van")
 
     def add_item(self, item):
         if item.text != "":
@@ -76,15 +97,17 @@ class EasyShopping(MDApp):
     def check_favorites(self):
         all_shops = self.controller.db.child("shops").get()
         in_fav = []
-        if "registered" in self.controller.auth.current_user.keys():
-            if self.controller.auth.current_user["registered"] is True:
-                favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-                    "favorites").get()
-                if favorites.each() is not None and favorites.each() != "":
-                    for shop in all_shops.each():
-                        for fav in favorites.each():
-                            if shop.key() == fav.key():
-                                in_fav.append(shop.key())
+        if self.controller.auth.current_user is not None:
+            if "registered" in self.controller.auth.current_user.keys():
+                if self.controller.auth.current_user["registered"] is True:
+                    favorites = self.controller.db.child("users").child(
+                        self.controller.currently_logged_in_email).child(
+                        "favorites").get()
+                    if favorites.each() is not None and favorites.each() != "":
+                        for shop in all_shops.each():
+                            for fav in favorites.each():
+                                if shop.key() == fav.key():
+                                    in_fav.append(shop.key())
 
         return in_fav
 
@@ -120,6 +143,7 @@ class EasyShopping(MDApp):
 
     def filter_shops(self, shop_type):
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
+        self.type = shop_type
 
         if shop_type == "all":
             self.upload_shops()
@@ -131,9 +155,6 @@ class EasyShopping(MDApp):
         for shop in all_shops.each():
             if shop.val()["type"] == shop_type:
                 self.create_card(shop.key(), favs)
-
-    def notification_test(self, mode="normal"):
-        notification.notify("Title", "Test notification message", "EasyShopping")
 
     def add_to_favorites(self, shop_name):
         if "registered" not in self.controller.auth.current_user.keys():
@@ -164,9 +185,17 @@ class EasyShopping(MDApp):
             self.create_card(shop.key(), favs)
 
     def refresh_favorites(self):
+        if "registered" not in self.controller.auth.current_user.keys():
+            self.root.get_screen("nav").ids.favs_grid.clear_widgets()
+            self.root.get_screen("nav").ids.favs_grid.add_widget(
+                MDLabel(
+                    text="Regisztrálj"
+                )
+            )
+
         self.root.get_screen("nav").ids.favs_grid.clear_widgets()
         favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-                "favorites").get()
+            "favorites").get()
         if favorites.each() is not None and favorites.each() != "":
             for fav in favorites.each():
                 img_path = "img/" + str(fav.key()) + ".png"
@@ -179,7 +208,7 @@ class EasyShopping(MDApp):
                     )
                 )
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
-        self.upload_shops()
+        self.filter_shops(self.type)
 
     def forgotten_password(self):
         content_cls = ForgottenPwContent()

@@ -60,13 +60,16 @@ class Controller:
 
     def join_as_guest(self):
         app = App.get_running_app()
-        login = self.auth.sign_in_anonymous()
+        """login = self.auth.sign_in_anonymous()
         self.currently_logged_in_token = login["idToken"]
         self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
         app.upload_shops()
         app.go_to_nav_screen()
         app.go_to_home_screen()
-        print(self.auth.current_user)
+        print(self.auth.current_user)"""
+        app.upload_shops()
+        app.go_to_nav_screen()
+        app.go_to_home_screen()
 
     def log_out(self):
         app = App.get_running_app()

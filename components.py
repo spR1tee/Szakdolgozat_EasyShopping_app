@@ -1,12 +1,10 @@
-from kivy.properties import StringProperty
+from kivy.core.text.markup import MarkupLabel
+from kivy.properties import StringProperty, ObjectProperty
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDTextButton
 from kivymd.uix.card import MDCard
-from kivymd.uix.label import MDLabel
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBodyTouch
 from kivymd.uix.relativelayout import MDRelativeLayout
-from kivy.core.text.markup import MarkupLabel
 from kivymd.uix.selectioncontrol import MDCheckbox
 
 
@@ -66,4 +64,7 @@ class ListItemWithCheckbox(OneLineAvatarIconListItem):
 
 
 class LeftCheckbox(ILeftBodyTouch, MDCheckbox):
+    pass
+
+class ExpansionContent(MDBoxLayout):
     pass

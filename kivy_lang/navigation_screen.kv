@@ -13,17 +13,30 @@
 
             MDBoxLayout:
                 orientation: "vertical"
-                md_bg_color: app.theme_cls.primary_color
+                # md_bg_color: app.theme_cls.primary_color
                 # padding: "10dp"
 
                 MDBoxLayout:
-                    md_bg_color: app.theme_cls.primary_color
+                    id: toolbar_container
+                    orientation: "vertical"
+                    adaptive_height: True
+                    spacing: "10dp"
+
+                    MDTopAppBar:
+                        id: toolbar
+                        title: "Válassz kategóriát"
+                        pos_hint: {'top': 1}
+                        # right_action_items: [["magnify", lambda x: app.open_search_field()]]
+
+
+                MDBoxLayout:
+                    # md_bg_color: app.theme_cls.primary_color
                     padding: dp(10)
                     adaptive_height: True
 
                     MDSwiper:
                         size_hint_y: None
-                        height: dp(150)
+                        height: dp(100)
                         # y: root.height - self.height - toolbar.height - dp(20)
                         on_swipe:
                             self.get_current_item().ids.icon.shake()
@@ -32,7 +45,7 @@
                         MySwiper:
                             text: "cart"
                             type: "all"
-                            label_text: "Minden"
+                            label_text: "Összes"
                             image: "img/food.png"
 
                         MySwiper:
@@ -42,14 +55,14 @@
                             image: "img/food.png"
 
                         MySwiper:
-                            type: "electronics"
                             text: "laptop"
+                            type: "electronics"
                             label_text: "Elektronika"
                             image: "img/food.png"
 
                         MySwiper:
-                            type: "clothing"
                             text: "tshirt-crew"
+                            type: "clothing"
                             label_text: "Ruházat"
                             image: "img/food.png"
 
@@ -125,19 +138,16 @@
             icon: "heart"
             # on_tab_press: app.check_if_registered()
 
-            MDFloatLayout:
+            MDBoxLayout:
                 # md_bg_color: app.theme_cls.primary_color
-                padding: 5
+                # padding: 5
+                orientation: "vertical"
 
                 MDTopAppBar:
                     id: topappbar
                     title: "Kedvencek"
                     font_name: "fonts/Comfortaa-Regular.ttf"
-                    elevation: 4
                     pos_hint: {'top': 1}
-
-                Widget:
-                    height: "100dp"
 
                 ScrollView:
                     bar_width: 0
