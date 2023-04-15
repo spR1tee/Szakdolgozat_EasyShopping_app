@@ -1,9 +1,9 @@
 import datetime
 
-# import fitz
+import fitz
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.uix.screenmanager import ScreenManager
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.button import MDFillRoundFlatButton
@@ -15,9 +15,10 @@ from kivymd.uix.pickers import MDDatePicker
 from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
 from controller import Controller
 
+
 # from plyer import notification
 
-from pdfview import PdfView
+# from pdfview import PdfView
 
 Window.size = 360, 640
 
@@ -42,7 +43,7 @@ class EasyShopping(MDApp):
         return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
-        self.root.get_screen("nav").ids.toolbar_container.add_widget(
+        self.root.get_screen("nav").ids.search_container.add_widget(
             MDExpansionPanel(
                 icon="magnify",
                 content=ExpansionContent(),
@@ -68,15 +69,25 @@ class EasyShopping(MDApp):
         self.item_list_dialog.dismiss()
 
     def perform_search(self, text):
-        """
-        doc = fitz.open('aldi.pdf')
-        for page in doc:
-            if text in page.get_text():
-                print(page.get_text())"""
-        pass
+        pdfs = ["aldi.pdf", "spar.pdf"]
+        found_text = []
+
+        for pdf in pdfs:
+            doc = fitz.open(pdf)
+            for page in doc:
+                if text in page.get_text():
+                    found_text.append(pdf.split(".")[0])
+                    break
+        favs = self.check_favorites()
+
+        self.root.get_screen("nav").ids.shops_grid.clear_widgets()
+        for found in found_text:
+            self.create_card(found, favs)
+
 
     def view_pdf(self, path, b):
-        self.pdfview = PdfView(path)
+        # self.pdfview = PdfView(path)
+        pass
 
     def add_item(self, item):
         if item.text != "":
@@ -137,6 +148,8 @@ class EasyShopping(MDApp):
             pass
 
     def filter_shops(self, shop_type):
+        print(shop_type)
+        print(self.root.get_screen("nav").ids.tabs.get_current_tab().type)
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
         self.type = shop_type
 
@@ -295,7 +308,8 @@ class EasyShopping(MDApp):
         self.dialog.open()
 
     def on_save_date_picker(self, instance, value, date_range):
-        label = MDLabel(text=str(value), halign="center", adaptive_height=True, font_name="fonts/Comfortaa-Regular.ttf")
+        label = MDLabel(text=str(value), halign="center", adaptive_height=True, font_name="fonts/Comfortaa-Regular.ttf",
+                        adaptive_width=True)
         if self.dob is not None:
             self.root.get_screen("register").ids.dob_box.clear_widgets()
         self.dob = str(value)

@@ -13,14 +13,12 @@
 
             MDBoxLayout:
                 orientation: "vertical"
-                # md_bg_color: app.theme_cls.primary_color
-                # padding: "10dp"
 
                 MDBoxLayout:
                     id: toolbar_container
                     orientation: "vertical"
-                    adaptive_height: True
-                    spacing: "10dp"
+                    size_hint_y: None
+                    height: "100dp"
 
                     MDTopAppBar:
                         id: toolbar
@@ -28,44 +26,37 @@
                         pos_hint: {'top': 1}
                         # right_action_items: [["magnify", lambda x: app.open_search_field()]]
 
+                    MDTabs:
+                        id: tabs
+                        on_tab_switch:
+                            # self.get_current_tab().ids.icon.shake()
+                            app.filter_shops(self.get_current_tab().type)
+
+                        Tab:
+                            icon: "cart"
+                            title: "Összes"
+                            type: "all"
+
+                        Tab:
+                            icon: "food"
+                            title: "Élelmiszer"
+                            type: "food"
+
+                        Tab:
+                            icon: "laptop"
+                            title: "Elektronika"
+                            type: "electronics"
+
+                        Tab:
+                            icon: "tshirt-crew"
+                            title: "Ruházat"
+                            type: "clothing"
+
 
                 MDBoxLayout:
-                    # md_bg_color: app.theme_cls.primary_color
-                    padding: dp(10)
+                    id: search_container
+                    padding: [dp(0), dp(10)]
                     adaptive_height: True
-
-                    MDSwiper:
-                        size_hint_y: None
-                        height: dp(100)
-                        # y: root.height - self.height - toolbar.height - dp(20)
-                        on_swipe:
-                            self.get_current_item().ids.icon.shake()
-                            app.filter_shops(self.get_current_item().type)
-
-                        MySwiper:
-                            text: "cart"
-                            type: "all"
-                            label_text: "Összes"
-                            image: "img/food.png"
-
-                        MySwiper:
-                            text: "food"
-                            type: "food"
-                            label_text: "Élelmiszer"
-                            image: "img/food.png"
-
-                        MySwiper:
-                            text: "laptop"
-                            type: "electronics"
-                            label_text: "Elektronika"
-                            image: "img/food.png"
-
-                        MySwiper:
-                            text: "tshirt-crew"
-                            type: "clothing"
-                            label_text: "Ruházat"
-                            image: "img/food.png"
-
 
                 ScrollView:
                     bar_width: 0
@@ -146,7 +137,6 @@
                 MDTopAppBar:
                     id: topappbar
                     title: "Kedvencek"
-                    font_name: "fonts/Comfortaa-Regular.ttf"
                     pos_hint: {'top': 1}
 
                 ScrollView:

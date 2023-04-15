@@ -3,9 +3,11 @@ from kivy.properties import StringProperty, ObjectProperty
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
+from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBodyTouch
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.selectioncontrol import MDCheckbox
+from kivymd.uix.tab import MDTabsBase
 
 
 class ClickableTextFieldRound(MDRelativeLayout):
@@ -66,5 +68,13 @@ class ListItemWithCheckbox(OneLineAvatarIconListItem):
 class LeftCheckbox(ILeftBodyTouch, MDCheckbox):
     pass
 
+
 class ExpansionContent(MDBoxLayout):
+    pass
+
+
+class Tab(MDFloatLayout, MDTabsBase):
+    text = StringProperty()
+    icon_text = StringProperty()
+    type = StringProperty()
     pass

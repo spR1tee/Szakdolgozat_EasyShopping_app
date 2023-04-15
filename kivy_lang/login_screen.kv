@@ -1,103 +1,104 @@
 <LoginScreen>:
     name: "login"
 
-    MDCard:
-        orientation: "vertical"
-        size: root.width, root.height
-        spacing: 10
-        padding: 15
-        elevation: 10
-
-        FitImage:
-            source: "img/logo.png"
-            size_hint: None, None
-            pos_hint: {'center_x': 0.5, 'center_y': 0.9}
-            width: "200dp"
-            height: "200dp"
+    MDFloatLayout:
 
         MDBoxLayout:
             orientation: "vertical"
             spacing: 10
-            size_hint: None, None
-            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-            adaptive_height: True
-            adaptive_width: True
+            padding: 15
+            md_bg_color: "white"
 
-            MDTextField:
-                id: user_email
-                hint_text: "E-mail cím"
-                pos_hint: {'center_x': 0.5}
-                size_hint_x: None
-                width: "300dp"
-                icon_left: "email"
-
-            ClickableTextFieldRound:
-                id: login_pw
-                size_hint_x: None
-                hint_text: "Jelszó"
-                width: "300dp"
-                pos_hint: {"center_x": 0.5}
+            FitImage:
+                source: "img/logo.png"
+                size_hint: None, None
+                pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+                width: "200dp"
+                height: "200dp"
 
             MDBoxLayout:
-                orientation: "horizontal"
-                pos_hint: {'center_x': 0.5}
-                size_hint_x: None
+                orientation: "vertical"
+                spacing: 10
+                size_hint: None, None
+                pos_hint: {'center_x': 0.5, 'center_y': 0.5}
                 adaptive_height: True
-                adaptive_width: False
-                width: "300dp"
-                spacing: "48dp"
+                adaptive_width: True
+
+                MDTextField:
+                    id: user_email
+                    hint_text: "E-mail cím"
+                    pos_hint: {'center_x': 0.5}
+                    size_hint_x: None
+                    width: "300dp"
+                    icon_left: "email"
+
+                ClickableTextFieldRound:
+                    id: login_pw
+                    size_hint_x: None
+                    hint_text: "Jelszó"
+                    width: "300dp"
+                    pos_hint: {"center_x": 0.5}
+
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    pos_hint: {'center_x': 0.5}
+                    size_hint_x: None
+                    adaptive_height: True
+                    adaptive_width: False
+                    width: "300dp"
+                    spacing: "48dp"
+
+                    MDFillRoundFlatIconButton:
+                        text: "Bejelentkezés"
+                        icon: "login"
+                        font_name: "fonts/Comfortaa-Regular.ttf"
+                        size_hint: None, None
+                        width: "300dp"
+                        on_release: app.controller.login(user_email.text, login_pw.text)
+
+                    MDTextButton:
+                        text: "Elfelejtett jelszó"
+                        underline: True
+                        font_name: "fonts/Comfortaa-Regular.ttf"
+                        font_size: sp(12)
+                        size_hint: None, None
+                        on_release: app.forgotten_password()
+
+                MDLabel:
+                    text: "Ha még nincs fiókod, itt regisztrálhatsz egyet:"
+                    font_name: "fonts/Comfortaa-Regular.ttf"
+                    adaptive_height: True
+                    adaptive_width: False
+                    width: "300dp"
+                    font_size: sp(10)
+                    size_hint: None, None
+                    halign: "center"
 
                 MDFillRoundFlatIconButton:
-                    text: "Bejelentkezés"
-                    icon: "login"
+                    text: "Regisztráció"
+                    icon: "note"
                     font_name: "fonts/Comfortaa-Regular.ttf"
+                    pos_hint: {'center_x': 0.5}
                     size_hint: None, None
                     width: "300dp"
-                    on_release: app.controller.login(user_email.text, login_pw.text)
+                    on_release:
+                        root.manager.current = "register"
+                        root.manager.transition.direction = "right"
 
-                MDTextButton:
-                    text: "Elfelejtett jelszó"
-                    underline: True
+                MDLabel:
+                    text: "vagy"
                     font_name: "fonts/Comfortaa-Regular.ttf"
-                    font_size: 12
+                    adaptive_height: True
+                    adaptive_width: False
+                    width: "300dp"
+                    font_size: sp(10)
                     size_hint: None, None
-                    on_release: app.forgotten_password()
+                    halign: "center"
 
-            MDLabel:
-                text: "Ha még nincs fiókod, itt regisztrálhatsz egyet:"
-                font_name: "fonts/Comfortaa-Regular.ttf"
-                adaptive_height: True
-                adaptive_width: False
-                width: "300dp"
-                font_size: 10
-                size_hint: None, None
-                halign: "center"
-
-            MDFillRoundFlatIconButton:
-                text: "Regisztráció"
-                icon: "note"
-                font_name: "fonts/Comfortaa-Regular.ttf"
-                pos_hint: {'center_x': 0.5}
-                size_hint: None, None
-                width: "300dp"
-                on_release:
-                    root.manager.current = "register"
-                    root.manager.transition.direction = "right"
-
-            MDLabel:
-                text: "vagy"
-                font_name: "fonts/Comfortaa-Regular.ttf"
-                adaptive_height: True
-                adaptive_width: False
-                width: "300dp"
-                font_size: 10
-                size_hint: None, None
-                halign: "center"
-
-            MDFillRoundFlatIconButton:
-                text: "Folytatás vendégként"
-                font_name: "fonts/Comfortaa-Regular.ttf"
-                pos_hint: {'center_x': 0.5}
-                size_hint: None, None
-                width: "300dp"
-                on_release: app.controller.join_as_guest()
+                MDFillRoundFlatIconButton:
+                    text: "Folytatás vendégként"
+                    font_name: "fonts/Comfortaa-Regular.ttf"
+                    pos_hint: {'center_x': 0.5}
+                    size_hint: None, None
+                    width: "300dp"
+                    on_release: app.controller.join_as_guest()
