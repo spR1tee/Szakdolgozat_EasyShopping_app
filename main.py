@@ -1,7 +1,6 @@
 import datetime
-import fitz
 
-from PyPDF2 import PdfReader
+# import fitz
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager
@@ -18,7 +17,7 @@ from controller import Controller
 
 # from plyer import notification
 
-# from webview import WebView
+from pdfview import PdfView
 
 Window.size = 360, 640
 
@@ -35,6 +34,7 @@ class EasyShopping(MDApp):
     item_list_dialog = None
     type = "all"
     controller = Controller()
+    pdfview = None
 
     def build(self):
         self.theme_cls.theme_style = "Light"
@@ -50,13 +50,9 @@ class EasyShopping(MDApp):
             )
         )
 
-    """
-    def view_google(self, b):
-        self.browser = WebView('https://s7g10.scene7.com/is/content/aldi/Online_akcios_ujsag_2023_04_13_1',
-                               enable_javascript=True,
-                               enable_downloads=True,
-                               enable_zoom=True)
-    """
+    def on_resume(self):
+        if self.pdfview:
+            self.pdfview.resume()
 
     def show_item_dialog(self):
         if not self.item_list_dialog:
@@ -72,16 +68,15 @@ class EasyShopping(MDApp):
         self.item_list_dialog.dismiss()
 
     def perform_search(self, text):
-        """reader = PdfReader("aldi.pdf")
-        for page in reader.pages:
-            if text in page.extract_text():
-                print("VAN!")
-                break"""
-
+        """
         doc = fitz.open('aldi.pdf')
         for page in doc:
             if text in page.get_text():
-                print("van")
+                print(page.get_text())"""
+        pass
+
+    def view_pdf(self, path, b):
+        self.pdfview = PdfView(path)
 
     def add_item(self, item):
         if item.text != "":
