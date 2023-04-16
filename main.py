@@ -1,6 +1,11 @@
 import datetime
+import os
 
 import fitz
+from urllib.request import Request, urlopen
+from io import BytesIO
+
+import requests
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -14,7 +19,6 @@ from kivymd.uix.pickers import MDDatePicker
 
 from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
 from controller import Controller
-
 
 # from plyer import notification
 
@@ -73,19 +77,32 @@ class EasyShopping(MDApp):
         found_text = []
 
         for pdf in pdfs:
-            doc = fitz.open(pdf)
+            path = "shops/" + pdf
+            # self.controller.storage.child(path).download(path, "downloaded.pdf")
+            storage_path = self.controller.storage.child(path).get_url(None)
+            r = requests.get(storage_path)
+            f = BytesIO(r.content)
+            # remoteFile = urlopen(Request(storage_path)).read()
+            # memoryFile = StringIO(remoteFile)
+            doc = fitz.open(stream=f, filetype="pdf")
             for page in doc:
                 if text in page.get_text():
                     found_text.append(pdf.split(".")[0])
                     break
+
+        """for pdf in pdfs:
+            doc = fitz.open(pdf)
+            for page in doc:
+                if text in page.get_text():
+                    found_text.append(pdf.split(".")[0])
+                    break"""
         favs = self.check_favorites()
 
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
         for found in found_text:
             self.create_card(found, favs)
 
-
-    def view_pdf(self, path, b):
+    def view_pdf(self, shop_name, b):
         # self.pdfview = PdfView(path)
         pass
 

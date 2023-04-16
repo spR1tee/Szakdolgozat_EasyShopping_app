@@ -74,7 +74,5 @@ class ExpansionContent(MDBoxLayout):
 
 
 class Tab(MDFloatLayout, MDTabsBase):
-    text = StringProperty()
-    icon_text = StringProperty()
     type = StringProperty()
     pass

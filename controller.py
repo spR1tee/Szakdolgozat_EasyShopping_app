@@ -17,6 +17,7 @@ class Controller:
         self.firebase = pyrebase.initialize_app(firebase_config)
         self.auth = self.firebase.auth()
         self.db = self.firebase.database()
+        self.storage = self.firebase.storage()
         self.currently_logged_in_token = None
         self.currently_logged_in_email = None
 
