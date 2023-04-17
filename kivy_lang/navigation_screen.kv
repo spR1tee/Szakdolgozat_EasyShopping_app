@@ -1,4 +1,5 @@
 #:include kivy_lang/swiper_item.kv
+#:include kivy_lang/tab.kv
 
 <NavigationScreen>:
     name: "nav"
@@ -18,45 +19,52 @@
                     id: toolbar_container
                     orientation: "vertical"
                     size_hint_y: None
-                    height: "100dp"
+                    #adaptive_height: True
+                    height: "130dp"
+                    size_hint_x: None
+                    width: root.width
+                    # md_bg_color: "red"
+                    spacing: "10dp"
 
                     MDTopAppBar:
                         id: toolbar
                         title: "Válassz kategóriát"
                         pos_hint: {'top': 1}
-                        # right_action_items: [["magnify", lambda x: app.open_search_field()]]
+                        right_action_items: [["magnify", lambda x: app.open_search_field()]]
 
-                    MDTabs:
-                        id: tabs
-                        on_tab_switch:
-                            # self.get_current_tab().ids.icon.shake()
-                            app.filter_shops(self.get_current_tab().type)
+                    MDSwiper:
+                        # md_bg_color: app.theme_cls.primary_color
+                        size_hint_y: None
+                        height: "60dp"
+                        on_swipe:
+                            self.get_current_item().ids.icon.shake()
+                            app.filter_shops(self.get_current_item().type)
 
-                        Tab:
+                        MySwiper:
                             icon: "cart"
-                            title: "Összes"
+                            text: "Összes"
                             type: "all"
 
-                        Tab:
+                        MySwiper:
                             icon: "food"
-                            title: "Élelmiszer"
+                            text: "Élelmiszer"
                             type: "food"
 
-                        Tab:
+                        MySwiper:
                             icon: "laptop"
-                            title: "Elektronika"
+                            text: "Elektronika"
                             type: "electronics"
 
-                        Tab:
+                        MySwiper:
                             icon: "tshirt-crew"
-                            title: "Ruházat"
+                            text: "Ruházat"
                             type: "clothing"
-
 
                 MDBoxLayout:
                     id: search_container
                     padding: [dp(0), dp(10)]
                     adaptive_height: True
+
 
                 ScrollView:
                     bar_width: 0
@@ -68,6 +76,8 @@
                         cols: 2
                         padding: [dp(15), dp(15), dp(15), dp(35)]
                         spacing: dp(15)
+
+
 
         MDBottomNavigationItem:
             name: "shopping_list"
@@ -130,8 +140,6 @@
             # on_tab_press: app.check_if_registered()
 
             MDBoxLayout:
-                # md_bg_color: app.theme_cls.primary_color
-                # padding: 5
                 orientation: "vertical"
 
                 MDTopAppBar:

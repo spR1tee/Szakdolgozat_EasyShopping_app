@@ -1,14 +1,11 @@
 import datetime
-import os
-
-import fitz
-from urllib.request import Request, urlopen
 from io import BytesIO
 
+import fitz
 import requests
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.utils import platform
 from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.button import MDFillRoundFlatButton
@@ -16,6 +13,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
 from kivymd.uix.label import MDLabel
 from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.spinner import MDSpinner
 
 from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
 from controller import Controller
@@ -24,11 +22,8 @@ from controller import Controller
 
 # from pdfview import PdfView
 
-Window.size = 360, 640
-
-
-class WindowManager(ScreenManager):
-    pass
+if platform == "win":
+    Window.size = 360, 640
 
 
 class EasyShopping(MDApp):
@@ -72,19 +67,21 @@ class EasyShopping(MDApp):
     def close_dialog_new(self):
         self.item_list_dialog.dismiss()
 
+    def add_spinner(self, text):
+        self.root.get_screen("nav").ids.spinner.active = True
+        self.perform_search(text)
+
     def perform_search(self, text):
+
         pdfs = ["aldi.pdf", "spar.pdf"]
         found_text = []
 
         for pdf in pdfs:
             path = "shops/" + pdf
-            # self.controller.storage.child(path).download(path, "downloaded.pdf")
             storage_path = self.controller.storage.child(path).get_url(None)
-            r = requests.get(storage_path)
-            f = BytesIO(r.content)
-            # remoteFile = urlopen(Request(storage_path)).read()
-            # memoryFile = StringIO(remoteFile)
-            doc = fitz.open(stream=f, filetype="pdf")
+            response = requests.get(storage_path)
+            mem_area = BytesIO(response.content)
+            doc = fitz.open(stream=mem_area, filetype="pdf")
             for page in doc:
                 if text in page.get_text():
                     found_text.append(pdf.split(".")[0])
@@ -99,10 +96,11 @@ class EasyShopping(MDApp):
         favs = self.check_favorites()
 
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
+
         for found in found_text:
             self.create_card(found, favs)
 
-    def view_pdf(self, shop_name, b):
+    def view_pdf(self, shop_name):
         # self.pdfview = PdfView(path)
         pass
 
@@ -166,7 +164,6 @@ class EasyShopping(MDApp):
 
     def filter_shops(self, shop_type):
         print(shop_type)
-        print(self.root.get_screen("nav").ids.tabs.get_current_tab().type)
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
         self.type = shop_type
 

@@ -4,7 +4,6 @@
     type: ""
 
     MDBoxLayout:
-        adaptive_height: True
         spacing: "12dp"
 
         MagicButton:
@@ -14,3 +13,60 @@
 
         MDLabel:
             text: root.title
+
+
+<CustomIconTab>:
+    type: ""
+    icon: ""
+    text: ""
+
+    MDBoxLayout:
+        orientation: "horizontal"
+        spacing: "6dp"
+        size_hint_x: None
+
+        MDIconButton:
+            icon_size: "20sp"
+            icon: root.icon
+
+        MDTextButton:
+            text: root.text
+            on_release: app.filter_shops(root.type)
+
+
+<CategoryMenu>:
+    size_hint_x: None
+    width: root.width
+
+    MDBoxLayout:
+        size_hint_x: None
+        orientation: "horizontal"
+        spacing: "12dp"
+
+        ScrollView:
+            bar_width: 0
+
+            MDBoxLayout:
+                orientation: "horizontal"
+                md_bg_color: "red"
+                adaptive_width: True
+
+                CustomIconTab:
+                    icon: "cart"
+                    text: "Összes"
+                    type: "all"
+
+                CustomIconTab:
+                    icon: "food"
+                    text: "Élelmiszer"
+                    type: "food"
+
+                CustomIconTab:
+                    icon: "laptop"
+                    text: "Elektronika"
+                    type: "electronics"
+
+                CustomIconTab:
+                    icon: "tshirt-crew"
+                    text: "Ruházat"
+                    type: "clothing"

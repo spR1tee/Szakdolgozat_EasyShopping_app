@@ -2,29 +2,27 @@
 
 
 <MySwiper@MDSwiperItem>
+    icon: ""
     text: ""
     type: ""
-    label_text: ""
     image: ""
 
     RelativeLayout:
 
-        FitImage:
-            source: root.image
-            radius: [20,]
-
         MDBoxLayout:
+            md_bg_color: app.theme_cls.primary_color
+            radius: [20,]
             adaptive_height: True
             spacing: "12dp"
 
             MagicButton:
                 id: icon
-                icon: root.text
+                icon: root.icon
                 user_font_size: "56sp"
                 # opposite_colors: True
 
             MDLabel:
-                text: root.label_text
+                text: root.text
                 font_name: "fonts/Comfortaa-Regular.ttf"
                 font_size: 18
                 size_hint_y: None
