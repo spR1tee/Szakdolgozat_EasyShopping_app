@@ -13,7 +13,6 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
 from kivymd.uix.label import MDLabel
 from kivymd.uix.pickers import MDDatePicker
-from kivymd.uix.spinner import MDSpinner
 
 from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
 from controller import Controller
@@ -72,9 +71,13 @@ class EasyShopping(MDApp):
         self.perform_search(text)
 
     def perform_search(self, text):
+        pdfs = []
+        found_text = []
+        """all_shops = self.controller.db.child("shops").get()
+        for shop in all_shops.each():
+            pdfs.append(shop.key() + ".pdf")"""
 
         pdfs = ["aldi.pdf", "spar.pdf"]
-        found_text = []
 
         for pdf in pdfs:
             path = "shops/" + pdf
