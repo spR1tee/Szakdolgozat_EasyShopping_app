@@ -1,11 +1,14 @@
-import datetime
 from io import BytesIO
 
 import fitz
+import googlemaps
 import requests
+from kivy.clock import mainthread
 from kivy.core.window import Window
 from kivy.lang import Builder
+from kivy.properties import StringProperty
 from kivy.utils import platform
+from kivy_garden.mapview import MapMarker
 from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.button import MDFillRoundFlatButton
@@ -13,9 +16,16 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
 from kivymd.uix.label import MDLabel
 from kivymd.uix.pickers import MDDatePicker
+from plyer import gps
 
+from api_key import google_api_key
 from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
 from controller import Controller
+from database import Database
+
+# from android.permissions import request_permissions, Permission
+
+# from webview import WebView
 
 # from plyer import notification
 
@@ -27,15 +37,25 @@ if platform == "win":
 
 class EasyShopping(MDApp):
     dialog = None
-    data = None
     dob = None
     browser = None
     item_list_dialog = None
     type = "all"
+    database = Database()
     controller = Controller()
     pdfview = None
+    gps_location = StringProperty()
+    gps_status = StringProperty()
+    lat = 46.254990
+    lon = 18.978990
+    api_key = google_api_key
 
     def build(self):
+        try:
+            gps.configure(on_location=self.on_location, on_status=self.on_status)
+        except NotImplementedError as e:
+            print(e)
+
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Green"
         return Builder.load_file("kivy_lang/main.kv")
@@ -48,10 +68,62 @@ class EasyShopping(MDApp):
                 panel_cls=MDExpansionPanelOneLine(text="Keresés"),
             )
         )
+        # self.add_markers()
 
     def on_resume(self):
         if self.pdfview:
             self.pdfview.resume()
+
+        gps.start(1000, 0)
+
+    def on_pause(self):
+        gps.stop()
+        return True
+
+    def start(self, minTime, minDistance):
+        gps.start(minTime, minDistance)
+
+    def stop(self):
+        gps.stop()
+
+    @mainthread
+    def on_location(self, **kwargs):
+        self.gps_location = '\n'.join([
+            '{}={}'.format(k, v) for k, v in kwargs.items()])
+        print(self.gps_location)
+
+    @mainthread
+    def on_status(self, stype, status):
+        self.gps_status = 'type={}\n{}'.format(stype, status)
+
+    @staticmethod
+    def search_places(api_key, lat, lon, radius, keyword):
+        client = googlemaps.Client(api_key)
+
+        search_params = {
+            'location': f'{lat},{lon}',
+            'radius': radius,
+            'keyword': keyword
+        }
+
+        places = client.places_nearby(**search_params)
+
+        coords = []
+        for place in places['results']:
+            lat = place['geometry']['location']['lat']
+            lon = place['geometry']['location']['lng']
+            coords.append((lat, lon))
+
+        return coords
+
+    def add_markers(self):
+        radius = 15000  # 1000 = 1 km
+        keyword = "supermarket"
+        shop_coords = self.search_places(self.api_key, self.lat, self.lon, radius, keyword)
+
+        for coord in shop_coords:
+            marker = MapMarker(lat=coord[0], lon=coord[1])
+            self.root.get_screen("nav").ids.mapview.add_widget(marker)
 
     def show_item_dialog(self):
         if not self.item_list_dialog:
@@ -66,10 +138,6 @@ class EasyShopping(MDApp):
     def close_dialog_new(self):
         self.item_list_dialog.dismiss()
 
-    def add_spinner(self, text):
-        self.root.get_screen("nav").ids.spinner.active = True
-        self.perform_search(text)
-
     def perform_search(self, text):
         pdfs = []
         found_text = []
@@ -81,7 +149,7 @@ class EasyShopping(MDApp):
 
         for pdf in pdfs:
             path = "shops/" + pdf
-            storage_path = self.controller.storage.child(path).get_url(None)
+            storage_path = self.database.storage.child(path).get_url(None)
             response = requests.get(storage_path)
             mem_area = BytesIO(response.content)
             doc = fitz.open(stream=mem_area, filetype="pdf")
@@ -89,22 +157,20 @@ class EasyShopping(MDApp):
                 if text in page.get_text():
                     found_text.append(pdf.split(".")[0])
                     break
-
-        """for pdf in pdfs:
-            doc = fitz.open(pdf)
-            for page in doc:
-                if text in page.get_text():
-                    found_text.append(pdf.split(".")[0])
-                    break"""
-        favs = self.check_favorites()
+        favs = self.database.check_favorites()
 
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
 
         for found in found_text:
             self.create_card(found, favs)
 
-    def view_pdf(self, shop_name):
+    def view_pdf(self, shop_name, b=None):
         # self.pdfview = PdfView(path)
+        # if platform == "android":
+        #    self.pdfview = WebView('https://www.google.com',
+        #                           enable_javascript=True,
+        #                           enable_downloads=True,
+        #                           enable_zoom=True,)
         pass
 
     def add_item(self, item):
@@ -112,28 +178,10 @@ class EasyShopping(MDApp):
             self.root.get_screen("nav").ids.container.add_widget(ListItemWithCheckbox(text=item.text))
             print(item.text)
             data = {item.text: 0}
-            self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-                "shopping_list").update(data)
+            self.database.update_shopping_list(data)
             item.text = ""
         else:
             self.open_error_dialog("Add meg a termék nevét!")
-
-    def check_favorites(self):
-        all_shops = self.controller.db.child("shops").get()
-        in_fav = []
-        if self.controller.auth.current_user is not None:
-            if "registered" in self.controller.auth.current_user.keys():
-                if self.controller.auth.current_user["registered"] is True:
-                    favorites = self.controller.db.child("users").child(
-                        self.controller.currently_logged_in_email).child(
-                        "favorites").get()
-                    if favorites.each() is not None and favorites.each() != "":
-                        for shop in all_shops.each():
-                            for fav in favorites.each():
-                                if shop.key() == fav.key():
-                                    in_fav.append(shop.key())
-
-        return in_fav
 
     def create_card(self, shop_name, favorites):
         img_path = "img/" + str(shop_name) + ".png"
@@ -147,8 +195,7 @@ class EasyShopping(MDApp):
         )
 
     def upload_shopping_list(self):
-        shopping_list = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-            "shopping_list").get()
+        shopping_list = self.database.get_shopping_list()
         try:
             if shopping_list is not None:
                 for item in shopping_list.each():
@@ -174,43 +221,40 @@ class EasyShopping(MDApp):
             self.upload_shops()
             return
 
-        all_shops = self.controller.db.child("shops").get()
-        favs = self.check_favorites()
+        all_shops = self.database.get_all_shops()
+        favs = self.database.check_favorites()
 
         for shop in all_shops.each():
             if shop.val()["type"] == shop_type:
                 self.create_card(shop.key(), favs)
 
     def add_to_favorites(self, shop_name):
-        if "registered" not in self.controller.auth.current_user.keys():
+        if not self.database.check_if_registered():
             toast("Be kell jelentkezned ahhoz, hogy a kedvenceidhez add!")
             return
 
-        favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-            "favorites").get()
+        favorites = self.database.get_favorites()
 
         if favorites.each() is not None:
             for fav in favorites.each():
                 if fav.key() == shop_name:
-                    self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-                        "favorites").child(shop_name).remove()
+                    self.database.remove_favorites(shop_name)
                     self.refresh_favorites()
                     return
 
         data = {shop_name: ""}
-        self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-            "favorites").update(data)
+        self.database.update_favorites(data)
         self.refresh_favorites()
 
     def upload_shops(self):
-        all_shops = self.controller.db.child("shops").get()
-        favs = self.check_favorites()
+        all_shops = self.database.get_all_shops()
+        favs = self.database.check_favorites()
 
         for shop in all_shops.each():
             self.create_card(shop.key(), favs)
 
     def refresh_favorites(self):
-        if "registered" not in self.controller.auth.current_user.keys():
+        if "registered" not in self.database.auth.current_user.keys():
             self.root.get_screen("nav").ids.favs_grid.clear_widgets()
             self.root.get_screen("nav").ids.favs_grid.add_widget(
                 MDLabel(
@@ -219,8 +263,7 @@ class EasyShopping(MDApp):
             )
 
         self.root.get_screen("nav").ids.favs_grid.clear_widgets()
-        favorites = self.controller.db.child("users").child(self.controller.currently_logged_in_email).child(
-            "favorites").get()
+        favorites = self.database.get_favorites()
         if favorites.each() is not None and favorites.each() != "":
             for fav in favorites.each():
                 img_path = "img/" + str(fav.key()) + ".png"
@@ -249,7 +292,7 @@ class EasyShopping(MDApp):
         value = textfield._get_text()
         if value != "":
             self.dialog.dismiss()
-            self.controller.auth.send_password_reset_email(value)
+            self.database.auth.send_password_reset_email(value)
             print("success")
         else:
             self.open_error_dialog("Add meg az e-mail címed!")
@@ -273,56 +316,23 @@ class EasyShopping(MDApp):
 
     def close_dialog_go_to_home(self, obj):
         self.dialog.dismiss()
-        self.go_to_home_screen()
+        self.controller.go_to_home_screen()
 
     def close_dialog_go_to_register(self, obj):
         self.dialog.dismiss()
-        self.go_to_home_screen()
-        self.go_to_register_screen()
-
-    def store_user_data(self):
-        self.data = {"email": self.root.get_screen("register").ids.user_email.text,
-                     "date_of_birth": self.dob,
-                     "username": self.root.get_screen("register").ids.username.text,
-                     "timestamp": str(datetime.datetime.now()),
-                     "shopping_list": "",
-                     "favorites": "",
-                     }
-        try:
-            email = self.root.get_screen("register").ids.user_email.text.split(".")[0]
-            self.controller.db.child("users").child(email).set(self.data)
-        except Exception:
-            self.open_error_dialog("Error while storing user data")
-
-    def go_to_login_screen(self, x=None):
-        self.root.current = "login"
-
-    def go_to_register_screen(self):
-        self.root.current = "register"
-
-    def go_to_nav_screen(self):
-        self.root.current = "nav"
-
-    def go_to_home_screen(self):
-        self.root.get_screen("nav").ids.bottom_nav.switch_tab("home")
-
-    def go_to_shopping_list_screen(self):
-        self.root.get_screen("nav").ids.bottom_nav.switch_tab("shopping_list")
-
-    def go_to_profile_screen(self):
-        self.root.get_screen("nav").ids.bottom_nav.switch_tab("profile")
+        self.controller.go_to_home_screen()
+        self.controller.go_to_register_screen()
 
     def check_if_registered(self):
-        if "registered" in self.controller.auth.current_user.keys():
-            if self.controller.auth.current_user["registered"] is True:
-                return
-
-        close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog_go_to_home)
-        register_button = MDFillRoundFlatButton(text="Regisztrálok", on_release=self.close_dialog_go_to_register)
-        self.dialog = MDDialog(title="Hiba",
-                               text="Sajnáljuk, de ez a funkció csak regisztrált felhasználók számára érhető el.",
-                               size_hint=(0.7, 1), buttons=[close_button, register_button])
-        self.dialog.open()
+        if self.database.check_if_registered():
+            return
+        else:
+            close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog_go_to_home)
+            register_button = MDFillRoundFlatButton(text="Regisztrálok", on_release=self.close_dialog_go_to_register)
+            self.dialog = MDDialog(title="Hiba",
+                                   text="Sajnáljuk, de ez a funkció csak regisztrált felhasználók számára érhető el.",
+                                   size_hint=(0.7, 1), buttons=[close_button, register_button])
+            self.dialog.open()
 
     def on_save_date_picker(self, instance, value, date_range):
         label = MDLabel(text=str(value), halign="center", adaptive_height=True, font_name="fonts/Comfortaa-Regular.ttf",

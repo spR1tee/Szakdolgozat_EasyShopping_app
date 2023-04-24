@@ -1,5 +1,5 @@
 from kivy.core.text.markup import MarkupLabel
-from kivy.properties import StringProperty, ObjectProperty
+from kivy.properties import StringProperty
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard

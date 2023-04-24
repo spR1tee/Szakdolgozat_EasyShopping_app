@@ -7,7 +7,7 @@
             id: reg
             pos_hint: {'top': 1}
             type_height: "small"
-            left_action_items: [["arrow-left", lambda x: app.go_to_login_screen(x)]]
+            left_action_items: [["arrow-left", lambda x: app.controller.go_to_login_screen()]]
             title: "Regisztráció"
 
         MDBoxLayout:
@@ -73,5 +73,5 @@
                 size_hint: None, None
                 width: "300dp"
                 on_release:
-                    app.controller.sign_up(user_email.text, register_pw.text, register_pw_again.text)
+                    app.database.sign_up(user_email.text, register_pw.text, register_pw_again.text)
                     root.manager.transition.direction = "left"
