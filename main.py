@@ -38,29 +38,37 @@ if platform == "win":
 class EasyShopping(MDApp):
     dialog = None
     dob = None
-    browser = None
     item_list_dialog = None
     type = "all"
     database = Database()
     controller = Controller()
     pdfview = None
-    gps_location = StringProperty()
     gps_status = StringProperty()
-    lat = 46.254990
-    lon = 18.978990
+    lat = None
+    lon = None
     api_key = google_api_key
 
     def build(self):
+        self.icon = "img/icon.png"
+
+        # Configure the gps
         try:
             gps.configure(on_location=self.on_location, on_status=self.on_status)
         except NotImplementedError as e:
+            self.lat = 46.254990
+            self.lon = 18.978990
             print(e)
+
+        # Request permission for using location on Android
+        if platform == "android":
+            self.request_location_permission()
 
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Green"
         return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
+        # Add the Search Panel Widget to the Home Screen
         self.root.get_screen("nav").ids.search_container.add_widget(
             MDExpansionPanel(
                 icon="magnify",
@@ -68,6 +76,7 @@ class EasyShopping(MDApp):
                 panel_cls=MDExpansionPanelOneLine(text="Keresés"),
             )
         )
+        # Adding the markers of the nearby shops on the map
         # self.add_markers()
 
     def on_resume(self):
@@ -88,14 +97,15 @@ class EasyShopping(MDApp):
 
     @mainthread
     def on_location(self, **kwargs):
-        self.gps_location = '\n'.join([
-            '{}={}'.format(k, v) for k, v in kwargs.items()])
-        print(self.gps_location)
+        self.lat = kwargs["lat"]
+        self.lon = kwargs["lon"]
 
     @mainthread
     def on_status(self, stype, status):
         self.gps_status = 'type={}\n{}'.format(stype, status)
 
+    # This method is using the Places API from Google to search for given keywords e.g. "shops" in a
+    # radius around the given coords and then returns a list of matching coordinates
     @staticmethod
     def search_places(api_key, lat, lon, radius, keyword):
         client = googlemaps.Client(api_key)
@@ -116,6 +126,7 @@ class EasyShopping(MDApp):
 
         return coords
 
+    # Adding the MapMarker widgets to the MapView with the right coordinates
     def add_markers(self):
         radius = 15000  # 1000 = 1 km
         keyword = "supermarket"
@@ -123,8 +134,10 @@ class EasyShopping(MDApp):
 
         for coord in shop_coords:
             marker = MapMarker(lat=coord[0], lon=coord[1])
+            print(coord)
             self.root.get_screen("nav").ids.mapview.add_widget(marker)
 
+    # Dialog method for adding new item to the shopping list
     def show_item_dialog(self):
         if not self.item_list_dialog:
             self.item_list_dialog = MDDialog(
@@ -138,10 +151,17 @@ class EasyShopping(MDApp):
     def close_dialog_new(self):
         self.item_list_dialog.dismiss()
 
+    def request_location_permission(self):
+        """request_permissions([Permission.ACCESS_COARSE_LOCATION,
+                            Permission.ACCESS_FINE_LOCATION])"""
+        pass
+
+    # Takes the text from the input and then iterates through the stored pdfs in the Firebase Storage for matching
+    # pattern and if found then displaying the shops, which contain the found item in their newspaper
     def perform_search(self, text):
         pdfs = []
         found_text = []
-        """all_shops = self.controller.db.child("shops").get()
+        """all_shops = self.database.get_all_shops()
         for shop in all_shops.each():
             pdfs.append(shop.key() + ".pdf")"""
 
@@ -149,30 +169,36 @@ class EasyShopping(MDApp):
 
         for pdf in pdfs:
             path = "shops/" + pdf
-            storage_path = self.database.storage.child(path).get_url(None)
-            response = requests.get(storage_path)
-            mem_area = BytesIO(response.content)
-            doc = fitz.open(stream=mem_area, filetype="pdf")
+            storage_path = self.database.storage.child(path).get_url(None)  # building storage path
+            response = requests.get(storage_path)  # getting the content from the storage
+            mem_area = BytesIO(response.content)  # getting the stream of the content
+            doc = fitz.open(stream=mem_area, filetype="pdf")  # opening the stream and then searching in it
             for page in doc:
                 if text in page.get_text():
                     found_text.append(pdf.split(".")[0])
                     break
-        favs = self.database.check_favorites()
 
-        self.root.get_screen("nav").ids.shops_grid.clear_widgets()
+        favs = self.database.check_favorites()  # checking favorites, so we can display it with the right icon
+
+        self.root.get_screen("nav").ids.shops_grid.clear_widgets()  # clearing all shop card widgets from the screen
 
         for found in found_text:
-            self.create_card(found, favs)
+            self.create_card(found, favs)  # creating and adding the shop cards to the screen
 
     def view_pdf(self, shop_name, b=None):
+        """path = "shops/" + shop_name + ".pdf"
+        storage_path = self.database.storage.child(path).get_url(None)
         # self.pdfview = PdfView(path)
-        # if platform == "android":
-        #    self.pdfview = WebView('https://www.google.com',
-        #                           enable_javascript=True,
-        #                           enable_downloads=True,
-        #                           enable_zoom=True,)
+
+        if platform == "android":
+            self.pdfview = WebView(storage_path,
+                                   enable_javascript=True,
+                                   enable_downloads=True,
+                                   enable_zoom=True, )"""
+
         pass
 
+    # Adding item to the shopping list
     def add_item(self, item):
         if item.text != "":
             self.root.get_screen("nav").ids.container.add_widget(ListItemWithCheckbox(text=item.text))
@@ -183,6 +209,7 @@ class EasyShopping(MDApp):
         else:
             self.open_error_dialog("Add meg a termék nevét!")
 
+    # Creating a shop card widget with the given name and content
     def create_card(self, shop_name, favorites):
         img_path = "img/" + str(shop_name) + ".png"
         self.root.get_screen("nav").ids.shops_grid.add_widget(
@@ -194,6 +221,7 @@ class EasyShopping(MDApp):
             )
         )
 
+    # Reloading the shopping list of the user from the database after starting the app
     def upload_shopping_list(self):
         shopping_list = self.database.get_shopping_list()
         try:
@@ -212,6 +240,7 @@ class EasyShopping(MDApp):
             print(e)
             pass
 
+    # This method makes the filtering after any change made to the category selector (Swiper)
     def filter_shops(self, shop_type):
         print(shop_type)
         self.root.get_screen("nav").ids.shops_grid.clear_widgets()
@@ -228,6 +257,7 @@ class EasyShopping(MDApp):
             if shop.val()["type"] == shop_type:
                 self.create_card(shop.key(), favs)
 
+    # Adding or removing shops to/from the favorites, the function is not available for Guests
     def add_to_favorites(self, shop_name):
         if not self.database.check_if_registered():
             toast("Be kell jelentkezned ahhoz, hogy a kedvenceidhez add!")
@@ -246,6 +276,7 @@ class EasyShopping(MDApp):
         self.database.update_favorites(data)
         self.refresh_favorites()
 
+    # Loading all shops and their cards on the main page after starting the app
     def upload_shops(self):
         all_shops = self.database.get_all_shops()
         favs = self.database.check_favorites()
@@ -253,14 +284,11 @@ class EasyShopping(MDApp):
         for shop in all_shops.each():
             self.create_card(shop.key(), favs)
 
+    # After adding or removing favorites this function is refreshing the displayed shop cards
     def refresh_favorites(self):
-        if "registered" not in self.database.auth.current_user.keys():
-            self.root.get_screen("nav").ids.favs_grid.clear_widgets()
-            self.root.get_screen("nav").ids.favs_grid.add_widget(
-                MDLabel(
-                    text="Regisztrálj"
-                )
-            )
+        if not self.database.check_if_registered():
+            toast("Regisztrálj, hogy láthasd a kedvenceidet!")
+            return
 
         self.root.get_screen("nav").ids.favs_grid.clear_widgets()
         favorites = self.database.get_favorites()

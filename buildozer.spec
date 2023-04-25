@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3, kivy, kivymd, pyrebase4, gcloud, googleapis-common-protos, protobuf, httplib2, pyparsing, oauth2client, pyasn1, pyasn1-modules, rsa, pycryptodome, python-jwt, jws, requests, certifi, charset-normalizer==2.1.1, idna, urllib3, requests-toolbelt, jwcrypto, cryptography, deprecated, wrapt, pillow
+requirements = python3, kivy, kivymd, pyrebase4, gcloud, googleapis-common-protos, protobuf, httplib2, pyparsing, oauth2client, pyasn1, pyasn1-modules, rsa, pycryptodome, python-jwt, jws, requests, certifi, charset-normalizer==2.1.1, idna, urllib3, requests-toolbelt, jwcrypto, cryptography, deprecated, wrapt, pillow, https://github.com/HyTurtle/plyer/archive/master.zip, pymupdf, googlemaps
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
