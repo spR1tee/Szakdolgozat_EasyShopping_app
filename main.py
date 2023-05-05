@@ -38,6 +38,7 @@ if platform == "win":
 class EasyShopping(MDApp):
     dialog = None
     dob = None
+    gps = None
     item_list_dialog = None
     type = "all"
     database = Database()
@@ -54,7 +55,9 @@ class EasyShopping(MDApp):
         # Configure the gps
         try:
             gps.configure(on_location=self.on_location, on_status=self.on_status)
+            self.gps = True
         except NotImplementedError as e:
+            self.gps = False
             self.lat = 46.254990
             self.lon = 18.978990
             print(e)
@@ -174,7 +177,7 @@ class EasyShopping(MDApp):
             mem_area = BytesIO(response.content)  # getting the stream of the content
             doc = fitz.open(stream=mem_area, filetype="pdf")  # opening the stream and then searching in it
             for page in doc:
-                if text in page.get_text():
+                if text.lower() in page.get_text().lower():
                     found_text.append(pdf.split(".")[0])
                     break
 
@@ -338,6 +341,17 @@ class EasyShopping(MDApp):
         self.dialog = MDDialog(title="Sikeres regisztráció", text=error_text,
                                size_hint=(1, None), buttons=[close_button])
         self.dialog.open()
+
+    def open_error_dialog_with_register_btn(self, error_text):
+        close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
+        reg_button = MDFillRoundFlatButton(text="Regisztrálok", on_release=self.go_to_reg_after_dialog)
+        self.dialog = MDDialog(title="Sikeres regisztráció", text=error_text,
+                               size_hint=(1, None), buttons=[close_button, reg_button])
+        self.dialog.open()
+
+    def go_to_reg_after_dialog(self, obj):
+        self.close_dialog(obj)
+        self.controller.go_to_register_screen()
 
     def close_dialog(self, obj):
         self.dialog.dismiss()

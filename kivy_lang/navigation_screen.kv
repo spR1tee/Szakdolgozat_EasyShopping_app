@@ -31,7 +31,6 @@
                         id: toolbar
                         title: "Válassz kategóriát"
                         pos_hint: {'top': 1}
-                        right_action_items: [["magnify", lambda x: app.open_search_field()]]
 
                     MDSwiper:
                         # md_bg_color: app.theme_cls.primary_color
@@ -85,12 +84,12 @@
             on_tab_press: app.check_if_registered()
 
             MDFloatLayout:
-                MDLabel:
-                    id: task_label
-                    halign: 'center'
-                    markup: True
-                    text: "[b]Bevásárlólista[/b]"
-                    pos_hint: {'y': .45}
+                md_bg_color: "blue"
+                MDTopAppBar:
+                    id: list_toolbar
+                    title: "Bevásárlólista"
+                    pos_hint: {'top': 1}
+                    right_action_items: [["list-status"]]
 
                 ScrollView:
                     pos_hint: {'center_y': .5, 'center_x': .5}
@@ -98,6 +97,7 @@
 
                     MDList:
                         id: container
+
 
                 MDFloatingActionButton:
                     icon: 'plus-thick'
@@ -108,7 +108,7 @@
         MDBottomNavigationItem:
             name: "profile"
             icon: "map"
-            # on_tab_press: app.check_if_registered()
+            on_tab_press: app.check_if_registered()
 
             MDBoxLayout:
                 id: map_container
@@ -130,22 +130,20 @@
         MDBottomNavigationItem:
             name: "cards"
             icon: "credit-card"
-            # on_tab_press: app.check_if_registered()
+            on_tab_press: app.check_if_registered()
 
             MDFloatLayout:
-                MDLabel:
-                    id: task_label
-                    halign: 'center'
-                    markup: True
-                    text: "[b]Hűségkártyák[/b]"
-                    pos_hint: {'y': .45}
+                MDTopAppBar:
+                    id: cards_toolbar
+                    title: "Hűségkártyák"
+                    pos_hint: {'top': 1}
 
                 ScrollView:
                     pos_hint: {'center_y': .5, 'center_x': .5}
                     size_hint: .9, .8
 
                     MDList:
-                        id: container
+                        id: card_container
 
                 MDFloatingActionButton:
                     icon: 'plus-thick'
@@ -156,7 +154,7 @@
         MDBottomNavigationItem:
             name: "favorites"
             icon: "heart"
-            # on_tab_press: app.check_if_registered()
+            on_tab_press: app.check_if_registered()
 
             MDBoxLayout:
                 orientation: "vertical"

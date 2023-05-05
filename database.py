@@ -64,16 +64,13 @@ class Database:
 
     def join_as_guest(self):
         app = MDApp.get_running_app()
-        """login = self.auth.sign_in_anonymous()
+        login = self.auth.sign_in_anonymous()
         self.currently_logged_in_token = login["idToken"]
         self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
         app.upload_shops()
-        app.go_to_nav_screen()
-        app.go_to_home_screen()
-        print(self.auth.current_user)"""
-        app.upload_shops()
         app.controller.go_to_nav_screen()
         app.controller.go_to_home_screen()
+        print(self.auth.current_user)
 
     def log_out(self):
         app = MDApp.get_running_app()
@@ -147,3 +144,5 @@ class Database:
             self.db.child("users").child(email).set(data)
         except Exception:
             app.open_error_dialog("Error while storing user data")
+
+

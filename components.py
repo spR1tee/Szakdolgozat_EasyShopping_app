@@ -49,18 +49,18 @@ class ListItemWithCheckbox(OneLineAvatarIconListItem):
             the_list_item.text = "[s]" + the_list_item.text + "[/s]"
             print(MarkupLabel(the_list_item.text).markup)
             data = {MarkupLabel(the_list_item.text).markup[1]: 1}
-            app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
+            app.database.db.child("users").child(app.database.currently_logged_in_email).child(
                 "shopping_list").update(data)
         else:
             the_list_item.text = MarkupLabel(the_list_item.text).markup[1]
             data = {the_list_item.text: 0}
-            app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
+            app.database.db.child("users").child(app.database.currently_logged_in_email).child(
                 "shopping_list").update(data)
 
     def delete_item(self, check, the_list_item):
         app = MDApp.get_running_app()
         text = MarkupLabel(the_list_item.text).markup[1] if check.active else MarkupLabel(the_list_item.text).markup[0]
-        app.controller.db.child("users").child(app.controller.currently_logged_in_email).child(
+        app.database.db.child("users").child(app.database.currently_logged_in_email).child(
             "shopping_list").child(text).remove()
         self.parent.remove_widget(the_list_item)
 
