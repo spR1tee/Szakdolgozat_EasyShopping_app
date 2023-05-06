@@ -1,8 +1,5 @@
-from io import BytesIO
-
-import fitz
 import googlemaps
-import requests
+
 from kivy.clock import mainthread
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -10,7 +7,6 @@ from kivy.properties import StringProperty
 from kivy.utils import platform
 from kivy_garden.mapview import MapMarker
 from kivymd.app import MDApp
-from kivymd.toast import toast
 from kivymd.uix.button import MDFillRoundFlatButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
@@ -19,7 +15,7 @@ from kivymd.uix.pickers import MDDatePicker
 from plyer import gps
 
 from api_key import google_api_key
-from components import DialogContent, ListItemWithCheckbox, ShopCard, ForgottenPwContent, ExpansionContent
+from components import DialogContent, ForgottenPwContent, ExpansionContent, PicDialogContent
 from controller import Controller
 from database import Database
 
@@ -40,7 +36,6 @@ class EasyShopping(MDApp):
     dob = None
     gps = None
     item_list_dialog = None
-    type = "all"
     database = Database()
     controller = Controller()
     pdfview = None
@@ -151,6 +146,17 @@ class EasyShopping(MDApp):
 
         self.item_list_dialog.open()
 
+    # Dialog method for adding new item to the cards list
+    def show_pic_dialog(self):
+        if not self.item_list_dialog:
+            self.item_list_dialog = MDDialog(
+                title="Adj meg egy nevet!",
+                type="custom",
+                content_cls=PicDialogContent(),
+            )
+
+        self.item_list_dialog.open()
+
     def close_dialog_new(self):
         self.item_list_dialog.dismiss()
 
@@ -158,35 +164,6 @@ class EasyShopping(MDApp):
         """request_permissions([Permission.ACCESS_COARSE_LOCATION,
                             Permission.ACCESS_FINE_LOCATION])"""
         pass
-
-    # Takes the text from the input and then iterates through the stored pdfs in the Firebase Storage for matching
-    # pattern and if found then displaying the shops, which contain the found item in their newspaper
-    def perform_search(self, text):
-        pdfs = []
-        found_text = []
-        """all_shops = self.database.get_all_shops()
-        for shop in all_shops.each():
-            pdfs.append(shop.key() + ".pdf")"""
-
-        pdfs = ["aldi.pdf", "spar.pdf"]
-
-        for pdf in pdfs:
-            path = "shops/" + pdf
-            storage_path = self.database.storage.child(path).get_url(None)  # building storage path
-            response = requests.get(storage_path)  # getting the content from the storage
-            mem_area = BytesIO(response.content)  # getting the stream of the content
-            doc = fitz.open(stream=mem_area, filetype="pdf")  # opening the stream and then searching in it
-            for page in doc:
-                if text.lower() in page.get_text().lower():
-                    found_text.append(pdf.split(".")[0])
-                    break
-
-        favs = self.database.check_favorites()  # checking favorites, so we can display it with the right icon
-
-        self.root.get_screen("nav").ids.shops_grid.clear_widgets()  # clearing all shop card widgets from the screen
-
-        for found in found_text:
-            self.create_card(found, favs)  # creating and adding the shop cards to the screen
 
     def view_pdf(self, shop_name, b=None):
         """path = "shops/" + shop_name + ".pdf"
@@ -201,113 +178,11 @@ class EasyShopping(MDApp):
 
         pass
 
-    # Adding item to the shopping list
-    def add_item(self, item):
-        if item.text != "":
-            self.root.get_screen("nav").ids.container.add_widget(ListItemWithCheckbox(text=item.text))
-            print(item.text)
-            data = {item.text: 0}
-            self.database.update_shopping_list(data)
-            item.text = ""
-        else:
-            self.open_error_dialog("Add meg a termék nevét!")
-
-    # Creating a shop card widget with the given name and content
-    def create_card(self, shop_name, favorites):
-        img_path = "img/" + str(shop_name) + ".png"
-        self.root.get_screen("nav").ids.shops_grid.add_widget(
-            ShopCard(
-                text=str(shop_name).title(),
-                image=img_path,
-                shop_name=str(shop_name),
-                icon="heart" if shop_name in favorites else "heart-outline",
-            )
-        )
-
-    # Reloading the shopping list of the user from the database after starting the app
-    def upload_shopping_list(self):
-        shopping_list = self.database.get_shopping_list()
-        try:
-            if shopping_list is not None:
-                for item in shopping_list.each():
-                    if item.val() == 0:
-                        add_item = ListItemWithCheckbox(text=item.key())
-                        self.root.get_screen("nav").ids.container.add_widget(add_item)
-                    elif item.val() == 1:
-                        add_item = ListItemWithCheckbox(text="[s]" + item.key() + "[/s]")
-                        add_item.ids.check.active = True
-                        self.root.get_screen("nav").ids.container.add_widget(add_item)
-                    print(item.key())
-                    print(item.val())
-        except Exception as e:
-            print(e)
-            pass
-
-    # This method makes the filtering after any change made to the category selector (Swiper)
-    def filter_shops(self, shop_type):
-        print(shop_type)
-        self.root.get_screen("nav").ids.shops_grid.clear_widgets()
-        self.type = shop_type
-
-        if shop_type == "all":
-            self.upload_shops()
-            return
-
-        all_shops = self.database.get_all_shops()
-        favs = self.database.check_favorites()
-
-        for shop in all_shops.each():
-            if shop.val()["type"] == shop_type:
-                self.create_card(shop.key(), favs)
-
-    # Adding or removing shops to/from the favorites, the function is not available for Guests
-    def add_to_favorites(self, shop_name):
-        if not self.database.check_if_registered():
-            toast("Be kell jelentkezned ahhoz, hogy a kedvenceidhez add!")
-            return
-
-        favorites = self.database.get_favorites()
-
-        if favorites.each() is not None:
-            for fav in favorites.each():
-                if fav.key() == shop_name:
-                    self.database.remove_favorites(shop_name)
-                    self.refresh_favorites()
-                    return
-
-        data = {shop_name: ""}
-        self.database.update_favorites(data)
-        self.refresh_favorites()
-
-    # Loading all shops and their cards on the main page after starting the app
-    def upload_shops(self):
-        all_shops = self.database.get_all_shops()
-        favs = self.database.check_favorites()
-
-        for shop in all_shops.each():
-            self.create_card(shop.key(), favs)
-
-    # After adding or removing favorites this function is refreshing the displayed shop cards
-    def refresh_favorites(self):
-        if not self.database.check_if_registered():
-            toast("Regisztrálj, hogy láthasd a kedvenceidet!")
-            return
-
-        self.root.get_screen("nav").ids.favs_grid.clear_widgets()
-        favorites = self.database.get_favorites()
-        if favorites.each() is not None and favorites.each() != "":
-            for fav in favorites.each():
-                img_path = "img/" + str(fav.key()) + ".png"
-                self.root.get_screen("nav").ids.favs_grid.add_widget(
-                    ShopCard(
-                        text=str(fav.key()).title(),
-                        image=img_path,
-                        shop_name=str(fav.key()),
-                        icon="heart",
-                    )
-                )
-        self.root.get_screen("nav").ids.shops_grid.clear_widgets()
-        self.filter_shops(self.type)
+    def view_card_pic(self, pic_name):
+        """path = "images/" + self.database.currently_logged_in_email + "/" + pic_name
+        storage_path = self.database.storage.child(path).get_url(None)
+        self.pdfview = WebView(storage_path)"""
+        pass
 
     def forgotten_password(self):
         content_cls = ForgottenPwContent()

@@ -20,11 +20,9 @@
                     id: toolbar_container
                     orientation: "vertical"
                     size_hint_y: None
-                    #adaptive_height: True
                     height: "130dp"
                     size_hint_x: None
                     width: root.width
-                    # md_bg_color: "red"
                     spacing: "10dp"
 
                     MDTopAppBar:
@@ -33,12 +31,11 @@
                         pos_hint: {'top': 1}
 
                     MDSwiper:
-                        # md_bg_color: app.theme_cls.primary_color
                         size_hint_y: None
                         height: "60dp"
                         on_swipe:
                             self.get_current_item().ids.icon.shake()
-                            app.filter_shops(self.get_current_item().type)
+                            app.database.filter_shops(self.get_current_item().type)
 
                         MySwiper:
                             icon: "cart"
@@ -84,7 +81,6 @@
             on_tab_press: app.check_if_registered()
 
             MDFloatLayout:
-                md_bg_color: "blue"
                 MDTopAppBar:
                     id: list_toolbar
                     title: "Bevásárlólista"
@@ -147,7 +143,7 @@
 
                 MDFloatingActionButton:
                     icon: 'plus-thick'
-                    # on_release: app.show_item_dialog()
+                    on_release: app.show_pic_dialog()
                     elevation_normal: 12
                     pos_hint: {'x': .8, 'y':.05}
 

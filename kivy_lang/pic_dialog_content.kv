@@ -1,4 +1,4 @@
-<DialogContent>:
+<PicDialogContent>:
     orientation: "vertical"
     spacing: "10dp"
     size_hint: 1, None
@@ -8,18 +8,18 @@
         rows: 1
 
         MDTextField:
-            id: item_text
-            hint_text: "Új elem hozzáadása"
+            id: pic_name_text
+            hint_text: "Új kártya neve"
             pos_hint: {"center_y": .4}
             max_text_length: 50
-            on_text_validate: (app.database.add_item_to_shopping_list(item_text), app.close_dialog_new())
+            on_text_validate: (app.database.add_item_to_cards(pic_name_text), app.close_dialog_new())
 
     BoxLayout:
         orientation: 'horizontal'
 
         MDRaisedButton:
             text: "MENTÉS"
-            on_release: (app.database.add_item_to_shopping_list(item_text), app.close_dialog_new())
+            on_release: (app.database.add_item_to_cards(pic_name_text), app.close_dialog_new())
 
         Widget:
             width: "250dp"

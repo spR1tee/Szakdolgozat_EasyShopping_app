@@ -38,6 +38,23 @@ class DialogContent(MDBoxLayout):
     pass
 
 
+class PicDialogContent(MDBoxLayout):
+    pass
+
+
+class PicListItem(OneLineAvatarIconListItem):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def delete_item(self, item):
+        app = MDApp.get_running_app()
+        app.database.db.child("users").child(app.database.currently_logged_in_email).child(
+            "cards").child(item.text).remove()
+        db_path = "images/" + app.database.currently_logged_in_email + "/" + item.text + ".jpg"
+        app.database.storage.delete(db_path)
+        self.parent.remove_widget(item)
+
+
 class ListItemWithCheckbox(OneLineAvatarIconListItem):
 
     def __init__(self, **kwargs):
@@ -70,20 +87,4 @@ class LeftCheckbox(ILeftBodyTouch, MDCheckbox):
 
 
 class ExpansionContent(MDBoxLayout):
-    pass
-
-
-class Tab(MDFloatLayout, MDTabsBase):
-    type = StringProperty()
-    pass
-
-
-class CustomIconTab(MDBoxLayout):
-    type = StringProperty()
-    icon = StringProperty()
-    text = StringProperty()
-    pass
-
-
-class CategoryMenu(MDBoxLayout):
     pass

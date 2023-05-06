@@ -11,4 +11,4 @@
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
             size_hint_x: None
             width: "280dp"
-            on_text_validate: app.perform_search(self.text)
+            on_text_validate: app.database.perform_search(self.text)

@@ -1,0 +1,21 @@
+#:import preview camera4kivy.Preview
+
+<CameraScreen>:
+    name: "camera"
+    md_bg_color: "black"
+
+    MDBoxLayout:
+        md_bg_color: "black"
+        orientation: "vertical"
+
+        Preview:
+            id: preview
+
+        MDBottomAppBar:
+
+            MDTopAppBar:
+                icon: "camera"
+                type: "bottom"
+                # left_action_items: [["arrow-left", lambda x: app.controller.go_to_nav_screen()]]
+                on_action_button:
+                    root.take_photo()

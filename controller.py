@@ -33,3 +33,8 @@ class Controller:
     def go_to_profile_screen():
         app = MDApp.get_running_app()
         app.root.get_screen("nav").ids.bottom_nav.switch_tab("profile")
+
+    @staticmethod
+    def go_to_camera_screen():
+        app = MDApp.get_running_app()
+        app.root.current = "camera"

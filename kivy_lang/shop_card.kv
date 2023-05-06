@@ -34,7 +34,7 @@
                 theme_icon_color: "Custom"
                 icon_color: "red"
                 on_release:
-                    app.add_to_favorites(root.shop_name)
+                    app.database.add_to_favorites(root.shop_name)
                     self.icon = "heart" if self.icon == "heart-outline" else "heart-outline"
 
         MDBoxLayout:
