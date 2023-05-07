@@ -153,12 +153,40 @@
             on_tab_press: app.check_if_registered()
 
             MDBoxLayout:
+                spacing: "10dp"
                 orientation: "vertical"
 
                 MDTopAppBar:
                     id: topappbar
                     title: "Kedvencek"
                     pos_hint: {'top': 1}
+
+                MDSwiper:
+                    size_hint_y: None
+                    height: "60dp"
+                    on_swipe:
+                        self.get_current_item().ids.icon.shake()
+                        app.database.filter_favorites(self.get_current_item().type)
+
+                    MySwiper:
+                        icon: "cart"
+                        text: "Összes"
+                        type: "all"
+
+                    MySwiper:
+                        icon: "food"
+                        text: "Élelmiszer"
+                        type: "food"
+
+                    MySwiper:
+                        icon: "laptop"
+                        text: "Elektronika"
+                        type: "electronics"
+
+                    MySwiper:
+                        icon: "tshirt-crew"
+                        text: "Ruházat"
+                        type: "clothing"
 
                 ScrollView:
                     bar_width: 0

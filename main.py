@@ -57,15 +57,15 @@ class EasyShopping(MDApp):
             self.lon = 18.978990
             print(e)
 
-        # Request permission for using location on Android
-        if platform == "android":
-            self.request_location_permission()
-
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Green"
         return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
+        if platform == "android":
+            from android_permissions import AndroidPermissions
+            self.dont_gc = AndroidPermissions(self.start_app)
+
         # Add the Search Panel Widget to the Home Screen
         self.root.get_screen("nav").ids.search_container.add_widget(
             MDExpansionPanel(
@@ -76,6 +76,9 @@ class EasyShopping(MDApp):
         )
         # Adding the markers of the nearby shops on the map
         # self.add_markers()
+
+    def start_app(self):
+        self.dont_gc = None
 
     def on_resume(self):
         if self.pdfview:
@@ -150,7 +153,7 @@ class EasyShopping(MDApp):
     def show_pic_dialog(self):
         if not self.item_list_dialog:
             self.item_list_dialog = MDDialog(
-                title="Adj meg egy nevet!",
+                title="Adj meg egy nevet az új kártyának!",
                 type="custom",
                 content_cls=PicDialogContent(),
             )
@@ -159,11 +162,6 @@ class EasyShopping(MDApp):
 
     def close_dialog_new(self):
         self.item_list_dialog.dismiss()
-
-    def request_location_permission(self):
-        """request_permissions([Permission.ACCESS_COARSE_LOCATION,
-                            Permission.ACCESS_FINE_LOCATION])"""
-        pass
 
     def view_pdf(self, shop_name, b=None):
         """path = "shops/" + shop_name + ".pdf"
@@ -179,10 +177,10 @@ class EasyShopping(MDApp):
         pass
 
     def view_card_pic(self, pic_name):
-        """path = "images/" + self.database.currently_logged_in_email + "/" + pic_name
+        path = "images/" + self.database.currently_logged_in_email + "/" + pic_name + ".jpg"
         storage_path = self.database.storage.child(path).get_url(None)
-        self.pdfview = WebView(storage_path)"""
-        pass
+        """self.pdfview = WebView(storage_path)"""
+        print(storage_path)
 
     def forgotten_password(self):
         content_cls = ForgottenPwContent()

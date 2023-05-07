@@ -1,32 +1,6 @@
-# Android **only** HTML viewer, always full screen.
-#
-# Back button or gesture has the usual browser behavior, except for the final
-# back event which returns the UI to the view before the browser was opened.
-#
-# Base Class:  https://kivy.org/doc/stable/api-kivy.uix.modalview.html
-#
-# Requires: android.permissions = INTERNET
-# Uses:     orientation = landscape, portrait, or all
-# Arguments:
-# url               : required string,  https://   file:// (content://  ?)
-# enable_javascript : optional boolean, defaults False
-# enable_downloads  : optional boolean, defaults False
-# enable_zoom       : optional boolean, defaults False
-#
-# Downloads are delivered to app storage see downloads_directory() below.
-#
-# Tested on api=27 and api=30
-#
-# Note:
-#    For api>27   http://  gives net::ERR_CLEARTEXT_NOT_PERMITTED
-#    This is Android implemented behavior.
-#
-# Source https://github.com/Android-for-Python/Webview-Example
-
-from kivy.uix.modalview import ModalView
-from kivy.clock import Clock
 from android.runnable import run_on_ui_thread
 from jnius import autoclass, cast, PythonJavaClass, java_method
+from kivy.uix.modalview import ModalView
 
 WebViewA = autoclass('android.webkit.WebView')
 WebViewClient = autoclass('android.webkit.WebViewClient')
@@ -149,7 +123,6 @@ class WebView(ModalView):
             self.webview.resumeTimers()
 
     def downloads_directory(self):
-        # e.g. Android/data/org.test.myapp/files/Download
         dir_type = Environment.DIRECTORY_DOWNLOADS
         context = PythonActivity.mActivity.getApplicationContext()
         directory = context.getExternalFilesDir(dir_type)

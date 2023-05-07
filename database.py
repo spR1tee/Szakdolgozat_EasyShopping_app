@@ -8,6 +8,7 @@ import pyrebase
 import requests
 from kivymd.app import MDApp
 from kivymd.toast import toast
+from kivymd.uix.label import MDLabel
 
 from components import ShopCard, ListItemWithCheckbox, PicListItem
 
@@ -33,6 +34,7 @@ class Database:
         self.currently_logged_in_email = None
         self.card_name = None
         self.type = "all"
+        self.fav_type = "all"
 
     def sign_up(self, email, password, password_again):
         app = MDApp.get_running_app()
@@ -87,23 +89,6 @@ class Database:
             self.currently_logged_in_email = None
         app.controller.go_to_login_screen()
 
-    def check_favorites(self):
-        all_shops = self.db.child("shops").get()
-        in_fav = []
-        if self.auth.current_user is not None:
-            if "registered" in self.auth.current_user.keys():
-                if self.auth.current_user["registered"] is True:
-                    favorites = self.db.child("users").child(
-                        self.currently_logged_in_email).child(
-                        "favorites").get()
-                    if favorites.each() is not None and favorites.each() != "":
-                        for shop in all_shops.each():
-                            for fav in favorites.each():
-                                if shop.key() == fav.key():
-                                    in_fav.append(shop.key())
-
-        return in_fav
-
     def check_if_registered(self):
         if self.auth.current_user is not None:
             if "registered" in self.auth.current_user.keys():
@@ -111,6 +96,19 @@ class Database:
                     return True
 
         return False
+
+    def check_favorites(self):
+        all_shops = self.db.child("shops").get()
+        in_fav = []
+        if self.check_if_registered():
+            favorites = self.db.child("users").child(self.currently_logged_in_email).child("favorites").get()
+            if favorites.each() is not None and favorites.each() != "":
+                for shop in all_shops.each():
+                    for fav in favorites.each():
+                        if shop.key() == fav.key():
+                            in_fav.append(shop.key())
+
+        return in_fav
 
     def get_all_shops(self):
         return self.db.child("shops").get()
@@ -158,7 +156,7 @@ class Database:
             email = app.root.get_screen("register").ids.user_email.text.split(".")[0]
             self.db.child("users").child(email).set(data)
         except Exception:
-            app.open_error_dialog("Error while storing user data")
+            app.open_error_dialog("Valami hiba történt.")
 
     # Takes the text from the input and then iterates through the stored pdfs in the Firebase Storage for matching
     # pattern and if found then displaying the shops, which contain the found item in their newspaper
@@ -227,7 +225,7 @@ class Database:
         app = MDApp.get_running_app()
         if item.text != "":
             app.root.get_screen("nav").ids.card_container.add_widget(PicListItem(text=item.text))
-            data = {item.text : ""}
+            data = {item.text: ""}
             self.update_cards(data)
             self.card_name = item.text
             item.text = ""
@@ -240,11 +238,10 @@ class Database:
         app = MDApp.get_running_app()
         db_path = "images/" + self.currently_logged_in_email + "/" + self.card_name + ".jpg"
         self.storage.child(db_path).put(path)
-        print(path)
         self.card_name = None
         shutil.rmtree(path.split("\\")[1])
         time.sleep(2)
-        app.root.current = "nav"
+        app.controller.go_to_nav_screen()
 
     # Reloading the shopping list of the user from the database after starting the app
     def upload_shopping_list(self):
@@ -268,13 +265,18 @@ class Database:
     def load_cards(self):
         app = MDApp.get_running_app()
         cards = self.get_cards()
-        try:
-            if cards.each() is not None:
-                for item in cards.each():
-                    add_item = PicListItem(text=item.key())
-                    app.root.get_screen("nav").ids.card_container.add_widget(add_item)
-        except Exception as e:
-            print(e)
+        if cards.each() is not None:
+            for item in cards.each():
+                add_item = PicListItem(text=item.key())
+                app.root.get_screen("nav").ids.card_container.add_widget(add_item)
+        """else:
+            app.root.get_screen("nav").ids.card_container.add_widget(
+                MDLabel(
+                    text="Még nem adtál hozzá egy kártyát sem.",
+                    font_name="fonts/Comfortaa-Regular.ttf",
+                    pos_hint={"center_x": 0.5, "center_y": 0.5},
+                )
+            )"""
 
     # This method makes the filtering after any change made to the category selector (Swiper)
     def filter_shops(self, shop_type):
@@ -292,6 +294,30 @@ class Database:
         for shop in all_shops.each():
             if shop.val()["type"] == shop_type:
                 self.create_card(shop.key(), favs)
+
+    def filter_favorites(self, shop_type):
+        app = MDApp.get_running_app()
+        app.root.get_screen("nav").ids.favs_grid.clear_widgets()
+        self.fav_type = shop_type
+
+        if shop_type == "all":
+            self.refresh_favorites()
+
+        all_shops = self.get_all_shops()
+        favs = self.check_favorites()
+
+        for shop in all_shops.each():
+            if shop.val()["type"] == shop_type:
+                if shop.key() in favs:
+                    img_path = "img/" + str(shop.key()) + ".png"
+                    app.root.get_screen("nav").ids.favs_grid.add_widget(
+                        ShopCard(
+                            text=str(shop.key()).title(),
+                            image=img_path,
+                            shop_name=str(shop.key()),
+                            icon="heart",
+                        )
+                    )
 
     # Adding or removing shops to/from the favorites, the function is not available for Guests
     def add_to_favorites(self, shop_name):
@@ -334,9 +360,3 @@ class Database:
                 )
         app.root.get_screen("nav").ids.shops_grid.clear_widgets()
         self.filter_shops(self.type)
-
-
-
-
-
-

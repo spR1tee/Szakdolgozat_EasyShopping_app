@@ -1,33 +1,9 @@
-# Android *only* PDF Viewer for Kivy, *full screen only*.
-#
-# Swipe left or right to change page in pdf
-# Back key or back gesture returns the view to the Kivy layout before PdfView()
-# Rotates document if buildozer.spec orientation = all
-# Document width fits screen width, vertical scroll added if necessary.
-# NOTE: self.resume() must be called on_resume() if orientation = all
-#
-# Base Class:  https://kivy.org/doc/stable/api-kivy.uix.modalview.html
-# The contents of this ModalView are Android Views, not Kivy Widgets. Inside
-# this ModalView Kivy does not paint the screen or get touch events from the
-# screen. Painting and touch handling are done using the Android Java API via
-# Pyjnius.
-#
-# Uses buildozer.spec:
-#   orientation = landscape, portrait, or all
-# Argument:
-#   filepath : required string, path to pdf file
-#
-# Issues:
-#   no pinch/zoom/drag, so 'orientation = all' is a good choice
-#
-# Source https://github.com/Android-for-Python/PDFview-Example
+from os.path import exists
 
-from kivy.uix.modalview import ModalView
-from kivy.clock import Clock
-from kivy.core.window import Window
 from android.runnable import run_on_ui_thread
 from jnius import autoclass, cast, PythonJavaClass, java_method
-from os.path import exists
+from kivy.core.window import Window
+from kivy.uix.modalview import ModalView
 
 PdfRenderer = autoclass('android.graphics.pdf.PdfRenderer')
 ParcelFileDescriptor = autoclass('android.os.ParcelFileDescriptor')

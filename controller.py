@@ -2,7 +2,8 @@ from kivymd.app import MDApp
 
 
 class Controller:
-    app = MDApp.get_running_app()
+    def __init__(self):
+        self.app = MDApp.get_running_app()
 
     @staticmethod
     def go_to_login_screen():

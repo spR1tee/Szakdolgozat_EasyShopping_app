@@ -1,13 +1,12 @@
 from kivy.core.text.markup import MarkupLabel
 from kivy.properties import StringProperty
 from kivymd.app import MDApp
+from kivymd.toast import toast
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
-from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBodyTouch
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.tab import MDTabsBase
 
 
 class ClickableTextFieldRound(MDRelativeLayout):
@@ -51,8 +50,9 @@ class PicListItem(OneLineAvatarIconListItem):
         app.database.db.child("users").child(app.database.currently_logged_in_email).child(
             "cards").child(item.text).remove()
         db_path = "images/" + app.database.currently_logged_in_email + "/" + item.text + ".jpg"
-        app.database.storage.delete(db_path)
+        app.database.storage.delete(db_path, None)
         self.parent.remove_widget(item)
+        toast("Kártya törölve!")
 
 
 class ListItemWithCheckbox(OneLineAvatarIconListItem):
