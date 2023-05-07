@@ -33,30 +33,34 @@ class Database:
         self.currently_logged_in_token = None
         self.currently_logged_in_email = None
         self.card_name = None
+        self.userId = None
         self.type = "all"
         self.fav_type = "all"
 
     def sign_up(self, email, password, password_again):
         app = MDApp.get_running_app()
-        if email == "" or password == "" or password_again == "" or app.dob is None:
-            app.open_error_dialog("Az összes mezőt kötelező kitölteni!")
+        if email == "" or password == "" or password_again == "" or app.controller.dob is None:
+            app.controller.open_error_dialog("Az összes mezőt kötelező kitölteni!")
             return
 
         if password != password_again:
-            app.open_error_dialog("A megadott jelszavak nem egyeznek!")
+            app.controller.open_error_dialog("A megadott jelszavak nem egyeznek!")
             return
 
         if len(password) < 6:
-            app.open_error_dialog("A jelszónak legalább 6 karakter hosszúnak kell lennie!")
+            app.controller.open_error_dialog("A jelszónak legalább 6 karakter hosszúnak kell lennie!")
             return
 
         try:
-            self.auth.create_user_with_email_and_password(email, password)
+            user = self.auth.create_user_with_email_and_password(email, password)
+            user_token = self.auth.refresh(user["refreshToken"])
+            self.userId = user_token["userId"]
             self.store_user_data()
-            app.go_to_login_screen()
-            app.open_success_dialog("Sikeres regisztráció, most már bejelentkezhetsz!")
-        except Exception:
-            app.open_error_dialog("Már létezik ilyen Email cím!")
+            app.controller.go_to_login_screen()
+            app.controller.open_success_dialog("Sikeres regisztráció, most már bejelentkezhetsz!")
+        except Exception as e:
+            print(e)
+            app.controller.open_error_dialog("Valami hiba történt!")
 
     def login(self, email, password):
         app = MDApp.get_running_app()
@@ -64,14 +68,16 @@ class Database:
             login = self.auth.sign_in_with_email_and_password(email, password)
             self.currently_logged_in_token = login["idToken"]
             self.currently_logged_in_token = self.auth.refresh(login["refreshToken"])
-            self.currently_logged_in_email = email.split(".")[0]
+            self.currently_logged_in_email = email
+            self.userId = self.currently_logged_in_token["userId"]
             self.upload_shops()
             app.controller.go_to_nav_screen()
             self.upload_shopping_list()
             self.load_cards()
             self.refresh_favorites()
-        except Exception:
-            app.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
+        except Exception as e:
+            print(e)
+            app.controller.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
 
     def join_as_guest(self):
         app = MDApp.get_running_app()
@@ -87,6 +93,7 @@ class Database:
         if self.auth.current_user is not None:
             self.auth.current_user = None
             self.currently_logged_in_email = None
+            self.userId = None
         app.controller.go_to_login_screen()
 
     def check_if_registered(self):
@@ -101,7 +108,7 @@ class Database:
         all_shops = self.db.child("shops").get()
         in_fav = []
         if self.check_if_registered():
-            favorites = self.db.child("users").child(self.currently_logged_in_email).child("favorites").get()
+            favorites = self.db.child("users").child(self.userId).child("favorites").get()
             if favorites.each() is not None and favorites.each() != "":
                 for shop in all_shops.each():
                     for fav in favorites.each():
@@ -117,35 +124,35 @@ class Database:
         favorites = []
         if self.check_if_registered():
             favorites = self.db.child("users").child(
-                self.currently_logged_in_email).child(
+                self.userId).child(
                 "favorites").get()
         return favorites
 
     def get_shopping_list(self):
-        return self.db.child("users").child(self.currently_logged_in_email).child("shopping_list").get()
+        return self.db.child("users").child(self.userId).child("shopping_list").get()
 
     def update_favorites(self, data):
-        self.db.child("users").child(self.currently_logged_in_email).child("favorites").update(data)
+        self.db.child("users").child(self.userId).child("favorites").update(data)
 
     def update_shopping_list(self, data):
-        self.db.child("users").child(self.currently_logged_in_email).child("shopping_list").update(data)
+        self.db.child("users").child(self.userId).child("shopping_list").update(data)
 
     def get_cards(self):
-        return self.db.child("users").child(self.currently_logged_in_email).child("cards").get()
+        return self.db.child("users").child(self.userId).child("cards").get()
 
     def update_cards(self, data):
-        self.db.child("users").child(self.currently_logged_in_email).child("cards").update(data)
+        self.db.child("users").child(self.userId).child("cards").update(data)
 
     def remove_cards(self, name):
-        self.db.child("users").child(self.currently_logged_in_email).child("cards").child(name).remove()
+        self.db.child("users").child(self.userId).child("cards").child(name).remove()
 
     def remove_favorites(self, shop_name):
-        self.db.child("users").child(self.currently_logged_in_email).child("favorites").child(shop_name).remove()
+        self.db.child("users").child(self.userId).child("favorites").child(shop_name).remove()
 
     def store_user_data(self):
         app = MDApp.get_running_app()
         data = {"email": app.root.get_screen("register").ids.user_email.text,
-                "date_of_birth": app.dob,
+                "date_of_birth": app.controller.dob,
                 "username": app.root.get_screen("register").ids.username.text,
                 "timestamp": str(datetime.datetime.now()),
                 "shopping_list": "",
@@ -153,10 +160,9 @@ class Database:
                 "cards": "",
                 }
         try:
-            email = app.root.get_screen("register").ids.user_email.text.split(".")[0]
-            self.db.child("users").child(email).set(data)
+            self.db.child("users").child(self.userId).set(data)
         except Exception:
-            app.open_error_dialog("Valami hiba történt.")
+            app.controller.open_error_dialog("Valami hiba történt.")
 
     # Takes the text from the input and then iterates through the stored pdfs in the Firebase Storage for matching
     # pattern and if found then displaying the shops, which contain the found item in their newspaper
@@ -218,7 +224,7 @@ class Database:
             self.update_shopping_list(data)
             item.text = ""
         else:
-            app.open_error_dialog("Add meg a termék nevét!")
+            app.controller.open_error_dialog("Add meg a termék nevét!")
 
     # Adding item to the cards
     def add_item_to_cards(self, item):
@@ -231,12 +237,12 @@ class Database:
             item.text = ""
             app.root.current = "camera"
         else:
-            app.open_error_dialog("Add meg a termék nevét!")
+            app.controller.open_error_dialog("Add meg a termék nevét!")
 
     # Uploading the picture taken by the user to the Firebase Storage
     def upload_card_pic(self, path):
         app = MDApp.get_running_app()
-        db_path = "images/" + self.currently_logged_in_email + "/" + self.card_name + ".jpg"
+        db_path = "images/" + self.userId + "/" + self.card_name + ".jpg"
         self.storage.child(db_path).put(path)
         self.card_name = None
         shutil.rmtree(path.split("\\")[1])

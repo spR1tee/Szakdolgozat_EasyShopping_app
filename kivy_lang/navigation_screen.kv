@@ -78,7 +78,7 @@
         MDBottomNavigationItem:
             name: "shopping_list"
             icon: "list-box"
-            on_tab_press: app.check_if_registered()
+            on_tab_press: app.controller.check_if_registered()
 
             MDFloatLayout:
                 MDTopAppBar:
@@ -97,14 +97,14 @@
 
                 MDFloatingActionButton:
                     icon: 'plus-thick'
-                    on_release: app.show_item_dialog()
+                    on_release: app.controller.show_item_dialog()
                     elevation_normal: 12
                     pos_hint: {'x': .8, 'y':.05}
 
         MDBottomNavigationItem:
             name: "profile"
             icon: "map"
-            on_tab_press: app.check_if_registered()
+            on_tab_press: app.controller.check_if_registered()
 
             MDBoxLayout:
                 id: map_container
@@ -118,15 +118,15 @@
 
                 MapView:
                     id: mapview
-                    lat: app.lat
-                    lon: app.lon
+                    lat: app.controller.lat
+                    lon: app.controller.lon
                     zoom: 12
-                    api_key: app.api_key
+                    api_key: app.controller.api_key
 
         MDBottomNavigationItem:
             name: "cards"
             icon: "credit-card"
-            on_tab_press: app.check_if_registered()
+            on_tab_press: app.controller.check_if_registered()
 
             MDFloatLayout:
                 MDTopAppBar:
@@ -143,14 +143,14 @@
 
                 MDFloatingActionButton:
                     icon: 'plus-thick'
-                    on_release: app.show_pic_dialog()
+                    on_release: app.controller.show_pic_dialog()
                     elevation_normal: 12
                     pos_hint: {'x': .8, 'y':.05}
 
         MDBottomNavigationItem:
             name: "favorites"
             icon: "heart"
-            on_tab_press: app.check_if_registered()
+            on_tab_press: app.controller.check_if_registered()
 
             MDBoxLayout:
                 spacing: "10dp"

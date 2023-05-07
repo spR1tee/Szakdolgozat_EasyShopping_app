@@ -6,12 +6,10 @@
     padding: dp(10)
     spacing: dp(10)
     radius: dp(25)
-    ripple_behavior: False
     open_text: "Megnyitás"
     size_hint: None, None
     size: "160dp", "200dp"
     orientation: "vertical"
-    # md_bg_color: app.theme_cls.primary_color
 
     Image:
         source: root.image
@@ -39,9 +37,10 @@
 
         MDBoxLayout:
             padding: "30dp"
+
             MDTextButton:
                 size_hint: None, None
                 pos_hint: {'center_x': 0.5, 'center_y': 0.5}
                 id: open_button
                 text: root.open_text
-                on_release: app.view_pdf(root.shop_name)
+                on_release: app.controller.view_pdf(root.shop_name)

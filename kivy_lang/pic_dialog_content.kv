@@ -12,18 +12,18 @@
             hint_text: "Új kártya neve"
             pos_hint: {"center_y": .4}
             max_text_length: 50
-            on_text_validate: (app.database.add_item_to_cards(pic_name_text), app.close_dialog_new())
+            on_text_validate: (app.database.add_item_to_cards(pic_name_text), app.controller.close_dialog_new())
 
     BoxLayout:
         orientation: 'horizontal'
 
         MDRaisedButton:
             text: "MENTÉS"
-            on_release: (app.database.add_item_to_cards(pic_name_text), app.close_dialog_new())
+            on_release: (app.database.add_item_to_cards(pic_name_text), app.controller.close_dialog_new())
 
         Widget:
             width: "250dp"
 
         MDFlatButton:
             text: 'MÉGSE'
-            on_release: app.close_dialog_new()
+            on_release: app.controller.close_dialog_new()

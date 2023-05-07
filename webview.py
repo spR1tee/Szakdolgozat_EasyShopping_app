@@ -75,7 +75,7 @@ class WebView(ModalView):
         webview.getSettings().setJavaScriptEnabled(self.enable_javascript)
         webview.getSettings().setBuiltInZoomControls(self.enable_zoom)
         webview.getSettings().setDisplayZoomControls(False)
-        webview.getSettings().setAllowFileAccess(True)  # default False api>29
+        webview.getSettings().setAllowFileAccess(True)
         layout = LinearLayout(mActivity)
         layout.setOrientation(LinearLayout.VERTICAL)
         layout.addView(webview, self.width, self.height)
@@ -88,7 +88,7 @@ class WebView(ModalView):
         try:
             webview.loadUrl(self.url)
         except Exception as e:
-            print('Webview.on_open(): ' + str(e))
+            print(str(e))
             self.dismiss()
 
     @run_on_ui_thread
