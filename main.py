@@ -10,6 +10,7 @@ from plyer import gps
 from components import ExpansionContent
 from controller import Controller
 from database import Database
+from google_maps import GoogleMaps
 
 # from plyer import notification
 
@@ -23,6 +24,7 @@ class EasyShopping(MDApp):
     gps = None
     permission = None
     database = Database()
+    googlemaps = GoogleMaps()
     controller = Controller()
     gps_status = StringProperty()
 
@@ -31,11 +33,11 @@ class EasyShopping(MDApp):
         try:
             gps.configure(on_location=self.on_location, on_status=self.on_status)
         except NotImplementedError as e:
-            self.controller.lat = 10
-            self.controller.lon = 10
+            self.googlemaps.lat = 10
+            self.googlemaps.lon = 10
             print(e)
 
-        self.icon = "img/icon.png"
+        self.icon = "assets/img/icon.png"
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Green"
         return Builder.load_file("kivy_lang/main.kv")
@@ -55,7 +57,7 @@ class EasyShopping(MDApp):
             )
         )
         # Adding the markers of the nearby shops on the map
-        # self.controller.add_markers()
+        # self.googlemaps.add_markers()
 
     def start_app(self):
         self.permission = None

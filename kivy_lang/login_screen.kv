@@ -10,7 +10,7 @@
             md_bg_color: "white"
 
             FitImage:
-                source: "img/logo.png"
+                source: "assets/img/logo.png"
                 size_hint: None, None
                 pos_hint: {'center_x': 0.5, 'center_y': 0.9}
                 width: "200dp"
@@ -51,7 +51,7 @@
                     MDFillRoundFlatIconButton:
                         text: "Bejelentkezés"
                         icon: "login"
-                        font_name: "fonts/Comfortaa-Regular.ttf"
+                        font_name: "assets/fonts/Comfortaa-Regular.ttf"
                         size_hint: None, None
                         width: "300dp"
                         on_release: app.database.login(user_email.text, login_pw.text)
@@ -59,14 +59,14 @@
                     MDTextButton:
                         text: "Elfelejtett jelszó"
                         underline: True
-                        font_name: "fonts/Comfortaa-Regular.ttf"
+                        font_name: "assets/fonts/Comfortaa-Regular.ttf"
                         font_size: "12dp"
                         size_hint: None, None
                         on_release: app.controller.forgotten_password()
 
                 MDLabel:
                     text: "Ha még nincs fiókod, itt regisztrálhatsz egyet:"
-                    font_name: "fonts/Comfortaa-Regular.ttf"
+                    font_name: "assets/fonts/Comfortaa-Regular.ttf"
                     adaptive_height: True
                     adaptive_width: False
                     width: "300dp"
@@ -77,7 +77,7 @@
                 MDFillRoundFlatIconButton:
                     text: "Regisztráció"
                     icon: "note"
-                    font_name: "fonts/Comfortaa-Regular.ttf"
+                    font_name: "assets/fonts/Comfortaa-Regular.ttf"
                     pos_hint: {'center_x': 0.5}
                     size_hint: None, None
                     width: "300dp"
@@ -87,7 +87,7 @@
 
                 MDLabel:
                     text: "vagy"
-                    font_name: "fonts/Comfortaa-Regular.ttf"
+                    font_name: "assets/fonts/Comfortaa-Regular.ttf"
                     adaptive_height: True
                     adaptive_width: False
                     width: "300dp"
@@ -97,7 +97,7 @@
 
                 MDFillRoundFlatIconButton:
                     text: "Folytatás vendégként"
-                    font_name: "fonts/Comfortaa-Regular.ttf"
+                    font_name: "assets/fonts/Comfortaa-Regular.ttf"
                     pos_hint: {'center_x': 0.5}
                     size_hint: None, None
                     width: "300dp"

@@ -17,7 +17,7 @@ class PicListItem(OneLineAvatarIconListItem):
         app = MDApp.get_running_app()
         app.database.remove_cards(item.text)
         db_path = "images/" + app.database.userId + "/" + item.text + ".jpg"
-        app.database.storage.delete(db_path, None)
+        app.database.remove_from_storage(db_path)
         self.parent.remove_widget(item)
         toast("Kártya törölve!")
 
@@ -41,21 +41,18 @@ class ListItemWithCheckbox(OneLineAvatarIconListItem):
     def delete_item(self, check, the_list_item):
         app = MDApp.get_running_app()
         text = MarkupLabel(the_list_item.text).markup[1] if check.active else MarkupLabel(the_list_item.text).markup[0]
-        app.database.db.child("users").child(app.database.userId).child(
-            "shopping_list").child(text).remove()
+        app.database.remove_shopping_list_item(text)
         self.parent.remove_widget(the_list_item)
 
 
 class ClickableTextFieldRound(MDRelativeLayout):
     text = StringProperty()
     hint_text = StringProperty()
-    pass
 
 
 class ClickableTextFieldRoundPasswordAgain(MDRelativeLayout):
     text = StringProperty()
     hint_text = StringProperty()
-    pass
 
 
 class ShopCard(MDCard):
@@ -63,7 +60,6 @@ class ShopCard(MDCard):
     image = StringProperty()
     shop_name = StringProperty()
     icon = StringProperty()
-    pass
 
 
 class ForgottenPwContent(MDBoxLayout):

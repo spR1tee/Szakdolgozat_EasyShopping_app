@@ -10,16 +10,17 @@ from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.label import MDLabel
 
+from api_key import firebase_api_key, auth_domain, databaseURL, projectId, storageBucket, messagingSenderId, appId
 from components import ShopCard, ListItemWithCheckbox, PicListItem
 
 firebase_config = {
-    'apiKey': "AIzaSyDCCgo6Iq_Xzrfh1tUJhRh8QTw8T1uhtSo",
-    'authDomain': "easyshopping-8e66f.firebaseapp.com",
-    'databaseURL': "https://easyshopping-8e66f-default-rtdb.europe-west1.firebasedatabase.app",
-    'projectId': "easyshopping-8e66f",
-    'storageBucket': "easyshopping-8e66f.appspot.com",
-    'messagingSenderId': "1084432810111",
-    'appId': "1:1084432810111:web:a412cda67fce880560bf4a"
+    'apiKey': firebase_api_key,
+    'authDomain': auth_domain,
+    'databaseURL': databaseURL,
+    'projectId': projectId,
+    'storageBucket': storageBucket,
+    'messagingSenderId': messagingSenderId,
+    'appId': appId
 }
 
 
@@ -71,10 +72,10 @@ class Database:
             self.currently_logged_in_email = email
             self.userId = self.currently_logged_in_token["userId"]
             self.upload_shops()
-            app.controller.go_to_nav_screen()
             self.upload_shopping_list()
             self.load_cards()
             self.refresh_favorites()
+            app.controller.go_to_nav_screen()
         except Exception as e:
             print(e)
             app.controller.open_error_dialog("Nem megfelelő felhasználónév vagy jelszó!")
@@ -149,6 +150,12 @@ class Database:
     def remove_favorites(self, shop_name):
         self.db.child("users").child(self.userId).child("favorites").child(shop_name).remove()
 
+    def remove_shopping_list_item(self, item_name):
+        self.db.child("users").child(self.userId).child("shopping_list").child(item_name).remove()
+
+    def remove_from_storage(self, db_path):
+        self.storage.delete(db_path, None)
+
     def store_user_data(self):
         app = MDApp.get_running_app()
         data = {"email": app.root.get_screen("register").ids.user_email.text,
@@ -205,7 +212,7 @@ class Database:
     # Creating a shop card widget with the given name and content
     def create_card(self, shop_name, favorites):
         app = MDApp.get_running_app()
-        img_path = "img/" + str(shop_name) + ".png"
+        img_path = "assets/img/" + str(shop_name) + ".png"
         app.root.get_screen("nav").ids.shops_grid.add_widget(
             ShopCard(
                 text=str(shop_name).title(),
@@ -315,7 +322,7 @@ class Database:
         for shop in all_shops.each():
             if shop.val()["type"] == shop_type:
                 if shop.key() in favs:
-                    img_path = "img/" + str(shop.key()) + ".png"
+                    img_path = "assets/img/" + str(shop.key()) + ".png"
                     app.root.get_screen("nav").ids.favs_grid.add_widget(
                         ShopCard(
                             text=str(shop.key()).title(),
@@ -355,7 +362,7 @@ class Database:
         favorites = self.get_favorites()
         if favorites.each() is not None and favorites.each() != "":
             for fav in favorites.each():
-                img_path = "img/" + str(fav.key()) + ".png"
+                img_path = "assets/img/" + str(fav.key()) + ".png"
                 app.root.get_screen("nav").ids.favs_grid.add_widget(
                     ShopCard(
                         text=str(fav.key()).title(),
