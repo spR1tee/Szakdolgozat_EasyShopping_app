@@ -56,6 +56,7 @@ class EasyShopping(MDApp):
                 panel_cls=MDExpansionPanelOneLine(text="Keresés"),
             )
         )
+        # self.googlemaps.add_markers(20000, "Reál")
 
     def start_app(self):
         self.permission = None

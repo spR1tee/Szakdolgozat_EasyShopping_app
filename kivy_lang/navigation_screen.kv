@@ -107,14 +107,46 @@
             on_tab_press: app.controller.check_if_registered()
 
             MDBoxLayout:
-                id: map_container
                 orientation: "vertical"
-                spacing: "12dp"
+                spacing: "10dp"
 
-                MDLabel:
-                    text: "Teszt Map"
-                    halign: 'center'
-                    pos_hint: {'y': .45}
+                MDTopAppBar:
+                    id: map_toolbar
+                    title: "Boltkereső"
+                    pos_hint: {'top': 1}
+
+                MDTextField:
+                    id: search_shop_name
+                    hint_text: "Bolt neve"
+                    pos_hint: {'center_x': 0.5}
+                    size_hint_x: None
+                    width: "300dp"
+                    icon_left: "cart"
+
+                MDTextField:
+                    id: search_radius
+                    hint_text: "Mekkora körzetben keresel? (km)"
+                    pos_hint: {'center_x': 0.5}
+                    size_hint_x: None
+                    width: "300dp"
+                    icon_left: "map-marker-distance"
+
+                MDFillRoundFlatIconButton:
+                    text: "Keresés"
+                    icon: "magnify"
+                    font_name: "assets/fonts/Comfortaa-Regular.ttf"
+                    size_hint: None, None
+                    pos_hint: {'center_x': 0.5}
+                    on_release: app.googlemaps.add_markers(search_radius.text, search_shop_name.text)
+
+                ScrollView:
+                    pos_hint: {'center_y': .5, 'center_x': .5}
+                    size_hint: .9, .8
+                    bar_width: 0
+                    do_scroll_y: True
+
+                    MDList:
+                        id: places_container
 
                 MapView:
                     id: mapview

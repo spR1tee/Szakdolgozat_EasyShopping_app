@@ -4,7 +4,7 @@ from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.card import MDCard
-from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBodyTouch
+from kivymd.uix.list import OneLineAvatarIconListItem, ILeftBodyTouch, ThreeLineListItem
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.selectioncontrol import MDCheckbox
 
@@ -80,3 +80,8 @@ class LeftCheckbox(ILeftBodyTouch, MDCheckbox):
 
 class ExpansionContent(MDBoxLayout):
     pass
+
+
+class ThreeLineItem(ThreeLineListItem):
+    lat = StringProperty()
+    lon = StringProperty()
