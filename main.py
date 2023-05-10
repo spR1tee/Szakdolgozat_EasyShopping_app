@@ -10,7 +10,7 @@ from plyer import gps
 from components import ExpansionContent
 from controller import Controller
 from database import Database
-from google_maps import GoogleMaps
+from map import Map
 
 # from plyer import notification
 
@@ -24,7 +24,7 @@ class EasyShopping(MDApp):
     gps = None
     permission = None
     database = Database()
-    googlemaps = GoogleMaps()
+    googlemaps = Map()
     controller = Controller()
     gps_status = StringProperty()
 
@@ -33,8 +33,8 @@ class EasyShopping(MDApp):
         try:
             gps.configure(on_location=self.on_location, on_status=self.on_status)
         except NotImplementedError as e:
-            self.googlemaps.lat = 10
-            self.googlemaps.lon = 10
+            self.googlemaps.lat = 46.25318
+            self.googlemaps.lon = 18.97883
             print(e)
 
         self.icon = "assets/img/icon.png"
@@ -56,8 +56,6 @@ class EasyShopping(MDApp):
                 panel_cls=MDExpansionPanelOneLine(text="Keresés"),
             )
         )
-        # Adding the markers of the nearby shops on the map
-        # self.googlemaps.add_markers()
 
     def start_app(self):
         self.permission = None
@@ -80,8 +78,8 @@ class EasyShopping(MDApp):
 
     @mainthread
     def on_location(self, **kwargs):
-        self.controller.lat = kwargs["lat"]
-        self.controller.lon = kwargs["lon"]
+        self.googlemaps.lat = kwargs["lat"]
+        self.googlemaps.lon = kwargs["lon"]
 
     @mainthread
     def on_status(self, stype, status):

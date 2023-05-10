@@ -16,19 +16,18 @@ class Controller:
         self.dialog = None
         self.item_list_dialog = None
 
-    def view_pdf(self, shop_name, b=None):
-        """
-        app = MDApp.get_running_app()
+    def view_pdf(self, shop_name):
+        """app = MDApp.get_running_app()
         path = "shops/" + shop_name + ".pdf"
-        storage_path = app.database.storage.child(path).get_url(None)
-        self.view = WebView(storage_path)"""
+        storage_path = app.database.get_storage_url(path)
+        self.view = WebView(storage_path, enable_zoom=True)"""
         pass
 
-    def view_card_pic(self, pic_name):
+    def view_card_pic(self, pic_name, b=None):
         app = MDApp.get_running_app()
         path = "images/" + app.database.userId + "/" + pic_name + ".jpg"
-        storage_path = app.database.storage.child(path).get_url(None)
-        """self.pdfview = WebView(storage_path)"""
+        storage_path = app.database.get_storage_url(path)
+        """self.view = WebView(storage_path, enable_zoom=True)"""
         print(storage_path)
 
     # Dialog method for adding new item to the shopping list
@@ -84,9 +83,9 @@ class Controller:
                                size_hint=(1, None), buttons=[close_button])
         self.dialog.open()
 
-    def open_success_dialog(self, error_text):
+    def open_success_dialog(self, success_text):
         close_button = MDFillRoundFlatButton(text="Vissza", on_release=self.close_dialog)
-        self.dialog = MDDialog(title="Sikeres regisztráció", text=error_text,
+        self.dialog = MDDialog(title="Sikeres regisztráció", text=success_text,
                                size_hint=(1, None), buttons=[close_button])
         self.dialog.open()
 
@@ -127,7 +126,7 @@ class Controller:
 
     def on_save_date_picker(self, instance, value, date_range):
         app = MDApp.get_running_app()
-        label = MDLabel(text=str(value), halign="center", adaptive_height=True, font_name="fonts/Comfortaa-Regular.ttf",
+        label = MDLabel(text=str(value), halign="center", adaptive_height=True, font_name="assets/fonts/Comfortaa-Regular.ttf",
                         adaptive_width=True)
         if self.dob is not None:
             app.root.get_screen("register").ids.dob_box.clear_widgets()

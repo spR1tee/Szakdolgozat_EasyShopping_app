@@ -118,6 +118,9 @@ class Database:
 
         return in_fav
 
+    def get_storage_url(self, path):
+        return self.storage.child(path).get_url(None)
+
     def get_all_shops(self):
         return self.db.child("shops").get()
 
@@ -161,7 +164,7 @@ class Database:
         data = {"email": app.root.get_screen("register").ids.user_email.text,
                 "date_of_birth": app.controller.dob,
                 "username": app.root.get_screen("register").ids.username.text,
-                "timestamp": str(datetime.datetime.now()),
+                "timestamp_of_reg": str(datetime.datetime.now()),
                 "shopping_list": "",
                 "favorites": "",
                 "cards": "",
@@ -173,33 +176,35 @@ class Database:
 
     # Takes the text from the input and then iterates through the stored pdfs in the Firebase Storage for matching
     # pattern and if found then displaying the shops, which contain the found item in their newspaper
+    pdfs = ["aldi.pdf", "spar.pdf"]
+
     def perform_search(self, text):
         app = MDApp.get_running_app()
         pdfs = []
         found_text = []
-        """all_shops = self.database.get_all_shops()
-        for shop in all_shops.each():
-            pdfs.append(shop.key() + ".pdf")"""
-
+        all_shops = self.get_all_shops()
         pdfs = ["aldi.pdf", "spar.pdf"]
+        
+        """for shop in all_shops.each():
+            pdfs.append(shop.key() + ".pdf")"""
 
         for pdf in pdfs:
             path = "shops/" + pdf
-            storage_path = self.storage.child(path).get_url(None)  # building storage path
-            response = requests.get(storage_path)  # getting the content from the storage
-            mem_area = BytesIO(response.content)  # getting the stream of the content
-            doc = fitz.open(stream=mem_area, filetype="pdf")  # opening the stream and then searching in it
+            storage_path = self.storage.child(path).get_url(None)
+            response = requests.get(storage_path)
+            mem_area = BytesIO(response.content)
+            doc = fitz.open(stream=mem_area, filetype="pdf")
             for page in doc:
                 if text.lower() in page.get_text().lower():
                     found_text.append(pdf.split(".")[0])
                     break
 
-        favs = self.check_favorites()  # checking favorites, so we can display it with the right icon
+        favs = self.check_favorites()
 
-        app.root.get_screen("nav").ids.shops_grid.clear_widgets()  # clearing all shop card widgets from the screen
+        app.root.get_screen("nav").ids.shops_grid.clear_widgets()
 
         for found in found_text:
-            self.create_card(found, favs)  # creating and adding the shop cards to the screen
+            self.create_card(found, favs)
 
     # Loading all shops and their cards on the main page after starting the app
     def upload_shops(self):
