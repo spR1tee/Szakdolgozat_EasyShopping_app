@@ -6,12 +6,10 @@ from io import BytesIO
 import certifi
 import fitz
 import pyrebase
-import requests
 from kivy.clock import Clock
 from kivy.network.urlrequest import UrlRequest
 from kivymd.app import MDApp
 from kivymd.toast import toast
-from kivymd.uix.label import MDLabel
 
 from api_key import firebase_api_key, auth_domain, databaseURL, projectId, storageBucket, messagingSenderId, appId
 from components import ShopCard, ListItemWithCheckbox, PicListItem
@@ -183,7 +181,7 @@ class Database:
     @staticmethod
     def asynchronous_api_request(url):
         Clock.start_clock()
-        req = UrlRequest(url)
+        req = UrlRequest(url, ca_file=certifi.where(), verify=True)
         while not req.is_finished:
             Clock.tick()
         Clock.stop_clock()
