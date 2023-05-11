@@ -3,9 +3,12 @@ import shutil
 import time
 from io import BytesIO
 
+import certifi
 import fitz
 import pyrebase
 import requests
+from kivy.clock import Clock
+from kivy.network.urlrequest import UrlRequest
 from kivymd.app import MDApp
 from kivymd.toast import toast
 from kivymd.uix.label import MDLabel
@@ -37,6 +40,7 @@ class Database:
         self.userId = None
         self.type = "all"
         self.fav_type = "all"
+        self.req = None
 
     def sign_up(self, email, password, password_again):
         app = MDApp.get_running_app()
@@ -176,7 +180,14 @@ class Database:
 
     # Takes the text from the input and then iterates through the stored pdfs in the Firebase Storage for matching
     # pattern and if found then displaying the shops, which contain the found item in their newspaper
-    pdfs = ["aldi.pdf", "spar.pdf"]
+    @staticmethod
+    def asynchronous_api_request(url):
+        Clock.start_clock()
+        req = UrlRequest(url)
+        while not req.is_finished:
+            Clock.tick()
+        Clock.stop_clock()
+        return req.result
 
     def perform_search(self, text):
         app = MDApp.get_running_app()
@@ -191,8 +202,8 @@ class Database:
         for pdf in pdfs:
             path = "shops/" + pdf
             storage_path = self.storage.child(path).get_url(None)
-            response = requests.get(storage_path)
-            mem_area = BytesIO(response.content)
+            data = self.asynchronous_api_request(storage_path)
+            mem_area = BytesIO(data)
             doc = fitz.open(stream=mem_area, filetype="pdf")
             for page in doc:
                 if text.lower() in page.get_text().lower():

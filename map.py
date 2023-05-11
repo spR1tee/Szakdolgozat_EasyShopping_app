@@ -1,5 +1,5 @@
 import googlemaps
-from kivy_garden.mapview import MapMarker
+from kivy_garden.mapview import MapMarker, MapMarkerPopup, MarkerMapLayer
 from kivymd.app import MDApp
 
 from api_key import google_api_key
@@ -13,11 +13,23 @@ class Map:
         self.lon = None
         self.address_list = []
 
-    def focus_on_shop(self, x, lat, lon):
+    def focus_on_shop(self, x):
         app = MDApp.get_running_app()
-        app.root.get_screen("nav").ids.mapview.center_on(lat, lon)
-        app.root.get_screen("nav").ids.mapview.zoom = 18
-        print(lat, lon)
+        app.root.get_screen("nav").ids.mapview.center_on(float(x.lat), float(x.lon))
+        app.root.get_screen("nav").ids.mapview.zoom = 16
+        print(x.lat, x.lon)
+
+    def delete_search(self):
+        app = MDApp.get_running_app()
+        mapview = app.root.get_screen("nav").ids.mapview
+        for child in mapview.children:
+            if isinstance(child, MarkerMapLayer):
+                child.clear_widgets()
+        app.root.get_screen("nav").ids.mapview.center_on(self.lat, self.lon)
+        app.root.get_screen("nav").ids.mapview.zoom = 12
+        app.root.get_screen("nav").ids.search_shop_name.text = ""
+        app.root.get_screen("nav").ids.search_radius.text = ""
+        app.root.get_screen("nav").ids.places_container.clear_widgets()
 
     # This method is using the Places API from Google to search for given keywords e.g. "shops" in a
     # radius around the given coords and then returns a list of matching coordinates
@@ -66,6 +78,11 @@ class Map:
 
         app.root.get_screen("nav").ids.places_container.clear_widgets()
 
+        mapview = app.root.get_screen("nav").ids.mapview
+        for child in mapview.children:
+            if isinstance(child, MarkerMapLayer):
+                child.clear_widgets()
+
         for coord in shop_coords:
             marker = MapMarker(lat=coord[0], lon=coord[1])
             app.root.get_screen("nav").ids.mapview.add_widget(marker)
@@ -76,9 +93,7 @@ class Map:
                 lat=str(coord[0]),
                 lon=str(coord[1])
             )
-            print(three_line_list_item.lat)
-            print(three_line_list_item.lon)
-            three_line_list_item.bind(on_release=lambda x: self.focus_on_shop(x, float(three_line_list_item.lat),
-                                                                              float(three_line_list_item.lon)))
+
+            three_line_list_item.bind(on_release=lambda x: self.focus_on_shop(x))
 
             app.root.get_screen("nav").ids.places_container.add_widget(three_line_list_item)
