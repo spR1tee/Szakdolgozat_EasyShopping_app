@@ -37,9 +37,10 @@ class EasyShopping(MDApp):
         self.icon = "assets/img/icon.png"
         self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "Green"
-        return Builder.load_file("../kivy_lang/main.kv")
+        return Builder.load_file("kivy_lang/main.kv")
 
     def on_start(self):
+        gps.start(1000, 0)
 
         if platform == "android":
             from android_permissions import AndroidPermissions
