@@ -13,8 +13,8 @@ from database import Database
 from map import Map
 
 
-if platform == "win":
-    Window.size = 360, 640
+# if platform == "win":
+#    Window.size = 360, 640
 
 
 class EasyShopping(MDApp):
